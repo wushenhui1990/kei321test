@@ -4,7 +4,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include "c8051f320.h"
+#include <c8051f320.h>
 #include "uart.h"
 #include "bitop.h"
 
