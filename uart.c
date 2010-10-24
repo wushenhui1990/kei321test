@@ -4,14 +4,15 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include <c8051f320.h>
+#include "c8051f320.h"
+#include "type.h"
 #include "uart.h"
 #include "bitop.h"
 
 
 #define BAUDRATE	115200
 
-unsigned char xdata uart_send_buf[64];
+u8 xdata uart_send_buf[64];
 
 /*
   	S0MODE	-	 MCE0	REN0	TB80	RB80	TI0	 	RI0 

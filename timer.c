@@ -1,5 +1,6 @@
-#include <c8051f320.h>
+#include "c8051f320.h"
 #include "config.h"
+#include "type.h"
 #include "timer.h"
 #include "bitop.h"
 
@@ -16,7 +17,7 @@
 #define TIMER0_RELOAD_HIGH       AUX4  // Reload value for Timer0 high byte   
 #define TIMER0_RELOAD_LOW        AUX3  // Reload value for Timer0 low byte   
 
-unsigned long g_ticks = 0;
+u32 g_ticks = 0;
 /*
 								TMOD
 GATE1 	C/T1	 T1M1	 T1M0 	GATE0 	C/T0 	T0M1 	T0M0 
@@ -53,7 +54,7 @@ void timer0_isr (void) interrupt 1
 } 
 /*
 //----------------------------------------------------------
-unsigned long t1cnt = 0;
+u32 t1cnt = 0;
 
 void timer1_init(void)   
 {   
