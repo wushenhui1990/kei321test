@@ -1,9 +1,10 @@
-#include <c8051f320.h>
+#include "c8051f320.h"
 #include "config.h"
+#include "type.h"
 #include "timer.h"
 #include "uart.h"
 #include "bitop.h"
-#include "F320_FlashUtils.h"
+#include "flash_rw.h"
 
 
 //---------------------------------------------------------
@@ -26,7 +27,7 @@
 
 void clk_init(void)
 {
-  	unsigned char i = 0;
+  	u8 i = 0;
 
     bit_set(CLKMUL,BIT7);  			//mul enable,BIT0 BIT1 is 00 as default.
 
@@ -74,19 +75,19 @@ extern unsigned long g_ticks ;
 
 void main(void)
 {
-	unsigned char a[4] = {0x0d,0x0e,0x0a,0x0d};
-	char b[4] = {0,0,0,0};
-
+	
+	u8 a[4] = {0x0d,0x0e,0x0a,0x0d};
+	u8 b[4] = {0,0,0,0};
 	sys_init();
 
 	F(("aaaa\n"));
 	F(("bbbb\n"));
 	F(("cccc\n"));
 
-	FLASH_Read(b,0x3a00,4);
+	flash_read(b,0x3a00,4);
 	F(("read from 0x3a00:%bx %bx %bx %bx\n",b[0],b[1],b[2],b[3]));
-	FLASH_Write(0x3a00,a,4);
-	FLASH_Read(b,0x3a00,4);
+	flash_write(0x3a00,a,4);
+	flash_read(b,0x3a00,4);
 	F(("read from 0x3a00:%bx %bx %bx %bx\n",b[0],b[1],b[2],b[3]));
 
 	while(1)
