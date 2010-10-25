@@ -14,7 +14,7 @@
 #define FLASH_LAST 0x03c00L
 #endif
 
-void flash_read (u8 *dest, u16 src, u8 cnt);
-void flash_write (u16 dest, u8 *src, u8 cnt);
+void flash_read (u8 *dest, u16 src, u16 cnt);
+void flash_update (u16 dest, u8 *src, u16 numbytes);
 
 #endif
