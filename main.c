@@ -6,6 +6,7 @@
 #include "bitop.h"
 #include "flash_rw.h"
 
+extern unsigned long g_ticks ;
 
 //---------------------------------------------------------
 
@@ -47,8 +48,26 @@ void clk_init(void)
 
 void xbar_init(void)
 {
-	XBR0      = 0x01;
-    XBR1      = 0x40;
+//	XBR0      = 0x01;
+//  XBR1      = 0x40;
+
+    P2MDOUT   = 0x02;
+    P0SKIP    = 0xCF;
+    P1SKIP    = 0xFF;
+    P2SKIP    = 0x01;
+    XBR0      = 0x01;
+    XBR1      = 0xC1;
+}
+void pca_init(void)
+{
+    PCA0CN    = 0x40;
+    PCA0MD    &= ~0x40;
+    PCA0MD    = 0x08;
+    PCA0CPM0  = 0x46;
+    PCA0CPL4  = 0x00;
+    //PCA0MD    |= 0x40;
+    PCA0CPH0  = 0x0C;
+
 }
 
 void sys_init(void)
@@ -62,6 +81,7 @@ void sys_init(void)
 	uart_init();
 #endif
 
+	pca_init();
 	xbar_init();
 
 	timer0_init();
@@ -71,31 +91,40 @@ void sys_init(void)
 }
 
 
-extern unsigned long g_ticks ;
+
+
+void flash_rw_test(void)
+{
+   #define FLASH_WRITE_ADDR		0x3900
+
+	u8 a[4] = {0x0f,0x0a,0x0c,0x0e};
+	u8 b[4] = {0,0,0,0};
+
+ 	flash_read(b,FLASH_WRITE_ADDR,4);
+	F(("read flash1: %bx %bx %bx %bx\n",b[0],b[1],b[2],b[3]));
+
+	flash_update(FLASH_WRITE_ADDR,a,4);
+	flash_read(b,FLASH_WRITE_ADDR,4);
+	F(("read flash2: %bx%bx%bx%bx\n",b[0],b[1],b[2],b[3]));
+
+
+}
 
 void main(void)
 {
 	
-	u8 a[4] = {0x0d,0x0e,0x0a,0x0d};
-	u8 b[4] = {0,0,0,0};
 	sys_init();
 
-	F(("aaaa\n"));
-	F(("bbbb\n"));
-	F(("cccc\n"));
+	F(("\nsizeof(short)=%02bx\nsizeof(int)=%02bx\nsizeof(long)=%02bx\n",sizeof(short),sizeof(int),sizeof(long)));
 
-	flash_read(b,0x3a00,4);
-	F(("read from 0x3a00:%bx %bx %bx %bx\n",b[0],b[1],b[2],b[3]));
-	flash_write(0x3a00,a,4);
-	flash_read(b,0x3a00,4);
-	F(("read from 0x3a00:%bx %bx %bx %bx\n",b[0],b[1],b[2],b[3]));
+	flash_rw_test();
 
 	while(1)
 	{
 	 	if(!(g_ticks%1000))
 		{
 			EA = 0;
-			F(("g_ticks:%ld\n",g_ticks));
+			F(("g_ticks:%ld\n",g_ticks/1000));
 			EA = 1;
 		}
 	}
