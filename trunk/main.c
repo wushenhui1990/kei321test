@@ -65,7 +65,7 @@ void main(void)
 
 	uart_init();
 
-	F(("\nsizeof(short)=%02bx\nsizeof(int)=%02bx\nsizeof(long)=%02bx\n",sizeof(short),sizeof(int),sizeof(long)));
+	F(("\nsizeof(short)=%02bx\nsizeof(int)=%02bx\nsizeof(long)=%02bx\n\n",sizeof(short),sizeof(int),sizeof(long)));
 
 	flash_rw_test();
 

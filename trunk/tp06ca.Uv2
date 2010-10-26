@@ -9,8 +9,8 @@ File 1,2,<.\STARTUP.A51><STARTUP.A51> 0x0
 File 1,1,<.\main.c><main.c> 0x0 
 File 1,1,<.\uart.c><uart.c> 0x0 
 File 1,1,<.\flash_rw.c><flash_rw.c> 0x0 
-File 1,1,<.\tool_init.c><tool_init.c> 0x0 
 File 1,1,<.\interrupt.c><interrupt.c> 0x0 
+File 1,1,<.\init_code.c><init_code.c> 0x0 
 
 
 Options 1,0,0  // Target 'Target 1'
@@ -121,9 +121,9 @@ Options 1,0,0  // Target 'Target 1'
  LX51IDS ()
   OPTDL (S8051.DLL)()(DCYG.DLL)(-pCYGF321)(S8051.DLL)()(TCYG.DLL)(-pCYGF321)
   OPTDBG 49142,8,()()()()()()()()()() (BIN\SiC8051F.dll)()()()
- FLASH1 { 0,0,0,0,0,0,0,0,255,255,255,255,0,0,0,0,0,0,0,0 }
- FLASH2 ()
- FLASH3 ()
+ FLASH1 { 1,0,0,0,1,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0 }
+ FLASH2 (BIN\SiC8051F.dll)
+ FLASH3 ("" ())
  FLASH4 ()
 EndOpt
 
