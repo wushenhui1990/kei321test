@@ -1,119 +1,69 @@
 #include "c8051f320.h"
 #include "config.h"
 #include "type.h"
-#include "timer.h"
 #include "uart.h"
 #include "bitop.h"
 #include "flash_rw.h"
 
 extern unsigned long g_ticks ;
-
-//---------------------------------------------------------
-
-/*
-  	R/W 	R/W 	R/W 	R/W 	R/W 	R/W 	R/W 	R/W 	Reset Value	   
-	- 		USBCLK 					- 		- 			CLKSL 		00000000
-	Bit7 	Bit6 	Bit5 	Bit4 	Bit3	 Bit2 	Bit1 	Bit0
-
-	USBCLK--BIT4,BIT5,BIT6
-	CLKSL---BIT0,BIT1
-
-	CLKSL 		Selected Clock
-	00 			Internal Oscillator (as determined by the IFCN bits in register OSCICN)
-	01 			External Oscillator
-	10 			4x Clock Multiplier / 2
-	11 			RESERVED
-
-*/
-
-void clk_init(void)
-{
-  	u8 i = 0;
-
-    bit_set(CLKMUL,BIT7);  			//mul enable,BIT0 BIT1 is 00 as default.
-
-    for (i = 0; i < 20; i++);    	// Wait 5us for initialization
-
-	bit_set(CLKMUL,BIT7|BIT6);
-
-	while (!bit_get(CLKMUL ,BIT5));
-	
-	bit_clear(CLKSEL,BIT0|BIT1);   //4x Clock Multiplier / 2
-	bit_set(CLKSEL,BIT1);
-
-  	bit_set(OSCICN,BIT0|BIT1|BIT7);  //internal osc as system clock ,24MHz    		
-	
-   	bit_set(RSTSRC,BIT2);  			// enable missing clock detector
-}
-
-void xbar_init(void)
-{
-//	XBR0      = 0x01;
-//  XBR1      = 0x40;
-
-    P2MDOUT   = 0x02;
-    P0SKIP    = 0xCF;
-    P1SKIP    = 0xFF;
-    P2SKIP    = 0x01;
-    XBR0      = 0x01;
-    XBR1      = 0xC1;
-}
-void pca_init(void)
-{
-    PCA0CN    = 0x40;
-    PCA0MD    &= ~0x40;
-    PCA0MD    = 0x08;
-    PCA0CPM0  = 0x46;
-    PCA0CPL4  = 0x00;
-    //PCA0MD    |= 0x40;
-    PCA0CPH0  = 0x0C;
-
-}
-
-void sys_init(void)
-{
-    EA =0;
-
-   	PCA0MD &= ~0x40;  // WDTE = 0 (clear watchdog timer enable)
-  	clk_init();
-
-#if(UART_DEBUG==1)
-	uart_init();
-#endif
-
-	pca_init();
-	xbar_init();
-
-	timer0_init();
-
-	EA =1;
-
-}
-
+extern void Init_Device(void);
 
 
 
 void flash_rw_test(void)
 {
    #define FLASH_WRITE_ADDR		0x3900
+   #define FLASH_WRITE_LEN		0x40
 
-	u8 a[4] = {0x0f,0x0a,0x0c,0x0e};
-	u8 b[4] = {0,0,0,0};
+   	unsigned long start = 0;
+	unsigned long end = 0;
+	unsigned char idx;	
 
- 	flash_read(b,FLASH_WRITE_ADDR,4);
-	F(("read flash1: %bx %bx %bx %bx\n",b[0],b[1],b[2],b[3]));
+	u8 src[FLASH_WRITE_LEN] =
+	{
+	    0xFF, 0xFF, 0x8B, 0xD8, 0x59, 0x85, 0xDB, 0x59, 0x0F, 0x85, 0x39, 0x02, 0x00, 0x00, 0x83, 0x46,
+	    0x0C, 0x02, 0x8B, 0x46, 0x0C, 0x56, 0x8A, 0x78, 0xFE, 0x8A, 0x58, 0xFF, 0xE8, 0x48, 0x7E, 0xFF,
+	    0xFF, 0x85, 0xDB, 0x59, 0x74, 0x41, 0x8B, 0x46, 0x08, 0x89, 0x45, 0x08, 0x8B, 0x45, 0x10, 0x03,
+	    0xD8, 0x53, 0x56, 0xE8, 0xF6, 0x7D, 0xFF, 0xFF, 0x8B, 0xD8, 0x59, 0x85, 0xDB, 0x59, 0x0F, 0x85 
+	};
 
-	flash_update(FLASH_WRITE_ADDR,a,4);
-	flash_read(b,FLASH_WRITE_ADDR,4);
-	F(("read flash2: %bx%bx%bx%bx\n",b[0],b[1],b[2],b[3]));
+	u8 dst[FLASH_WRITE_LEN] = {0};
 
+
+ 	flash_read(dst,FLASH_WRITE_ADDR,FLASH_WRITE_LEN);
+
+	F(("read_val_1:\n"));
+	for(idx=0;idx<FLASH_WRITE_LEN;idx++)
+	{
+		if(idx&&(!(idx%16)))
+			F(("\n"));
+		F(("%02bx ",dst[idx]));
+	}
+	F(("\n"));
+
+	flash_update(FLASH_WRITE_ADDR,src,FLASH_WRITE_LEN);
+	flash_read(dst,FLASH_WRITE_ADDR,FLASH_WRITE_LEN);
+
+
+	F(("read_val_2:\n"));
+	for(idx=0;idx<FLASH_WRITE_LEN;idx++)
+	{
+		if(idx&&(!(idx%16)))
+			F(("\n"));
+		if(src[idx]!=dst[idx])
+			F(("* "));
+		else
+			F(("%02bx ",dst[idx]));
+	}
+	F(("\n"));
 
 }
 
 void main(void)
 {
-	
-	sys_init();
+	Init_Device();
+
+	uart_init();
 
 	F(("\nsizeof(short)=%02bx\nsizeof(int)=%02bx\nsizeof(long)=%02bx\n",sizeof(short),sizeof(int),sizeof(long)));
 

@@ -21,6 +21,7 @@ u8 xdata uart_send_buf[64];
 */
 void uart_init(void)
 {
+/*
     SCON0 = 0x0; 
 
     if (SYSCLK/BAUDRATE/2/256 < 1)
@@ -54,7 +55,7 @@ void uart_init(void)
 	bit_set(TMOD,BIT5);
     TR1 = 1; 		// START Timer1
 
-
+ */
     TI0 = 1; 		// Indicate TX0 ready
    	SBUF0 = ' ';
 
