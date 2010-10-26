@@ -72,6 +72,7 @@ void Oscillator_Init()
 
 void Interrupts_Init()
 {
+    EIE1      = 0x02;
     IE        = 0x82;
 }
 
