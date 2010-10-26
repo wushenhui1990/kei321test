@@ -21,8 +21,9 @@ void Timer_Init()
 {
     TCON      = 0x50;
     TMOD      = 0x21;
-    CKCON     = 0x0C;
-    TH0       = 0xA0;
+    CKCON     = 0x0A;
+    TL0       = 0x0D;
+    TH0       = 0xFE;
     TH1       = 0x98;
 }
 
