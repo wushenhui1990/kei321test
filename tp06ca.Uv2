@@ -7,9 +7,10 @@ Group (Source Group 1)
 
 File 1,2,<.\STARTUP.A51><STARTUP.A51> 0x0 
 File 1,1,<.\main.c><main.c> 0x0 
-File 1,1,<.\timer.c><timer.c> 0x0 
 File 1,1,<.\uart.c><uart.c> 0x0 
 File 1,1,<.\flash_rw.c><flash_rw.c> 0x0 
+File 1,1,<.\tool_init.c><tool_init.c> 0x0 
+File 1,1,<.\interrupt.c><interrupt.c> 0x0 
 
 
 Options 1,0,0  // Target 'Target 1'
