@@ -108,7 +108,7 @@ Tconfiguration_desc_set code ConfigDescSet =
 	IN_EP1,									// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
 	LE( EP1_PACKET_SIZE ), 					// MaxPacketSize
-	10,										// bInterval
+	1,										// bInterval
   },
   {										// Endpoint1 OUT descriptor
 	sizeof(Tendpoint_descriptor),			// bLength
@@ -116,7 +116,7 @@ Tconfiguration_desc_set code ConfigDescSet =
 	OUT_EP1,								// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
 	LE( EP1_PACKET_SIZE ), 					// MaxPacketSize
-	10										// bInterval
+	1										// bInterval
   }
 }; //end of Configuration
 
