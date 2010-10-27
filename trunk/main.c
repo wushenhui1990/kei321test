@@ -3,6 +3,8 @@
 #include "type.h"
 #include "uart.h"
 #include "bitop.h"
+#include "ev.h"
+#include "ev_timer.h"
 
 #include "USB_INT_to_HID_Type.h"
 #include "USB_Configuration.h"
@@ -13,8 +15,6 @@
 #include <intrins.h>	// for _testbit_(), _nop_()
 
 
-extern unsigned long g_ticks ;
-extern void Init_Device(void);
 
 
 BYTE   idata Out_Packet[ EP1_PACKET_SIZE ];		// Last packet received from host
@@ -29,6 +29,7 @@ void fill_packet( void )
 	In_Packet[3] = 'l';			
 	In_Packet[4] = 'o';			
 }
+/*
 void fifo_read(u8 addr, u8 uNumBytes, u8 * pData)
 {
 	u8 idx;
@@ -58,16 +59,42 @@ void fifo_write(u8 addr, u8 uNumBytes, u8 * pData)
 		USB0DAT = pData[ idx ];
 	}
 }
- 
+*/ 
+
+extern unsigned long g_ticks ;
+extern void Init_Device(void);
 extern void test_func(void);
+
+static void  func_for_debug(void) 
+{
+
+	EA =0;
+	F(("g_ticks:%ld\n",g_ticks/1000));
+	EA =1;
+
+	return;
+}
 
 void main(void)
 {
+	timer_ev_unit_st xdata unit;
+
 	Init_Device();
-
+#if(UART_DEBUG==1)
 	uart_init();
+#endif
 
-	F(("\nsizeof(short)=%02bx\nsizeof(int)=%02bx\nsizeof(long)=%02bx\n\n",sizeof(short),sizeof(int),sizeof(long)));
+	event_init();
+	timer_event_init();
+
+#if 1
+	unit.event = EVENT_ID_TIMER_DEBUG;
+	unit.time = 1000;
+	unit.callback = func_for_debug;
+	timer_event_add(&unit);
+#endif
+
+//	F(("\nsizeof(short)=%02bx\nsizeof(int)=%02bx\nsizeof(long)=%02bx\n\n",sizeof(short),sizeof(int),sizeof(long)));
 
 	test_func();
 
@@ -75,13 +102,15 @@ void main(void)
 
 	while(1)
 	{
+
+		event_process();
+ 	#if 0	
 	 	if(!(g_ticks%1000))
 		{
 			EA = 0;
 			F(("g_ticks:%ld\n",g_ticks/1000));
 			EA = 1;
 		}
- 	#if 1	
 		{
             // task1: USB IN EP handling
             unsigned char EUSB0_save;
