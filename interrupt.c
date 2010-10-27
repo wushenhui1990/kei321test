@@ -1,5 +1,5 @@
 #include "c8051f320.h"
-
+#include "ev_timer.h"
 
 unsigned long g_ticks = 0 ;
 
@@ -10,4 +10,5 @@ void timer0_isr (void) interrupt 1
    TH0 = 0xFE;           // Reinit Timer0 High register   
    TL0 = 0x0D;           // Reinit Timer0 Low register  
    g_ticks++; 
+   timer_event_process();
 }
