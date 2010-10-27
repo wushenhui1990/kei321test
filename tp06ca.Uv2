@@ -15,9 +15,7 @@ File 1,1,<.\init_code.c><init_code.c> 0x0
 File 2,1,<.\USB_Descriptor.c><USB_Descriptor.c> 0x0 
 File 2,1,<.\USB_HID_Requests.c><USB_HID_Requests.c> 0x0 
 File 2,1,<.\USB_ISR.c><USB_ISR.c> 0x0 
-File 2,1,<.\USB_Main.c><USB_Main.c> 0x0 
 File 2,1,<.\USB_Standard_Requests.c><USB_Standard_Requests.c> 0x0 
-File 2,4,<.\KEIL_FIFO_RW.LIB><KEIL_FIFO_RW.LIB> 0x46BCA98A 
 
 
 Options 1,0,0  // Target 'Target 1'

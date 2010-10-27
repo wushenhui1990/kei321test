@@ -14,7 +14,7 @@
 
 //#define ALLOCATE_VARS
 #include "USB_ISR.h"
-#include "FIFO_RW.h"
+//#include "FIFO_RW.h"
 
 //-----------------------------------------------------------------------------
 // configuration conditions
@@ -135,6 +135,7 @@ volatile bit OUT_FIFO_loaded = FALSE;
 
 static void Handle_Setup(void);					// Handle setup packet on Endpoint 0
 static void Usb_Reset(void);					// Called after USB bus reset
+static void Usb_Suspend(void);
 static void Handle_SOF(void);
 
 static void Handle_Out1(void);					// Handle out packet on Endpoint 1
@@ -249,6 +250,63 @@ void Usb_ISR(void) interrupt 8			// Top-level USB ISR
 #if defined SDCC
 #pragma nooverlay
 #endif // SDCC
+//-----------------------------------------------------------------------------
+// Fifo_Read
+//-----------------------------------------------------------------------------
+//
+// Return Value : None
+// Parameters	:
+//					1) BYTE addr : target address
+//					2) BYTE uNumBytes : number of bytes to unload
+//					3) BYTE * pData : read data destination
+//
+// Read from the selected endpoint FIFO
+//
+//-----------------------------------------------------------------------------
+
+static void Fifo_Read(BYTE addr, BYTE uNumBytes, BYTE * pData)
+{
+	BYTE idx;
+
+	while(USB0ADR & 0x80);				// Wait for BUSY->'0'
+	USB0ADR = addr | 0xC0;				// Set address
+										// Set auto-read and initiate first read
+										// Read <NumBytes> from the selected FIFO
+	for ( idx = 0; idx < uNumBytes; idx++ ) {
+		while(USB0ADR & 0x80);			// Wait for BUSY->'0' (read complete)
+		pData[ idx ] = USB0DAT;
+	}
+	USB0ADR = 0;						// Clear auto-read
+}
+
+//-----------------------------------------------------------------------------
+// Fifo_Write
+//-----------------------------------------------------------------------------
+//
+// Return Value : None
+// Parameters	:
+//					1) BYTE addr : target address
+//					2) BYTE uNumBytes : number of bytes to unload
+//					3) BYTE * pData : location of source data
+//
+// Write to the selected endpoint FIFO
+//
+//-----------------------------------------------------------------------------
+
+static void Fifo_Write(BYTE addr, BYTE uNumBytes, BYTE * pData)
+{
+	BYTE idx;
+
+	while(USB0ADR & 0x80);				// Wait for BUSY->'0'
+	USB0ADR = (addr & 0x3F);			// Set address (mask out bits7-6)
+
+	// Write <NumBytes> to the selected FIFO
+	for ( idx = 0; idx < uNumBytes; idx++ ) {
+		while(USB0ADR & 0x80);			// Wait for BUSY->'0' (write complete)
+		USB0DAT = pData[ idx ];
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // Usb_Reset
@@ -294,6 +352,58 @@ static void Usb_Reset(void)
 #endif
 
 }
+//-----------------------------------------------------------------------------
+// Usb_Suspend
+//-----------------------------------------------------------------------------
+//
+// Enter suspend mode after suspend signalling is present on the bus
+//		- called from USB ISR
+//
+//-----------------------------------------------------------------------------
+
+
+#ifdef ENABLE_SUSPEND_RESUME
+
+static void Usb_Suspend(void)
+{			
+	// Put the device in a low power configuration
+#if (defined C8051F320_H) || (defined C8051F340_H)
+	P0MDIN	= 0x00;						// Port 0 configured as analog input
+	P1MDIN	= 0x00;						// Port 1 configured as analog input
+	P2MDIN	= 0x00;						// Port 2 configured as analog input
+	P3MDIN	= 0x00;						// Port 3 configured as analog input
+#endif
+
+//	ADC0CN &= ~0x80;					// Disable ADC0
+//	REF0CN	= 0x00;						// Disable voltage reference
+
+	OSCICN |= 0x20;						// Put oscillator to suspend
+
+	// When the device receives a non-idle USB event, it will resume execution
+	// on the instruction that follows OSCICN |= 0x20.		
+
+	// Re-enable everything that was disabled when going into Suspend
+#if defined C8051F320_H
+	P0MDIN	= 0xFF;						// Port 0 configured as diital input
+	P1MDIN	= 0x7F;						// Port 1 pin 7 set as analog input
+	P2MDIN	= 0xFF;						// Port 2 configured as diital input
+	P3MDIN	= 0xFF;						// Port 3 configured as diital input
+#endif // C8051F320_H
+
+#if defined C8051F340_H
+	P0MDIN	= 0xFF;						// Port 0 configured as diital input
+	P1MDIN	= 0xFF;						// Port 1 configured as diital input
+	P2MDIN  = ~(0x20);					// Port 2 pin 5 set as analog input
+	P3MDIN	= 0xFF;						// Port 3 configured as diital input
+#endif // C8051F340_H
+
+
+//	REF0CN	= 0x0E;						// Enable voltage reference VREF
+//	ADC0CN |= 0x80;						// Re-enable ADC
+
+}
+
+#endif	// ENABLE_SUSPEND_RESUME
 
 //-----------------------------------------------------------------------------
 // Handle_Setup
@@ -332,10 +442,12 @@ static void Handle_Setup(void)
 		if (ControlReg & rbOPRDY)		// Make sure that EP 0 has an Out Packet ready from host
 		{								// although if EP0 is idle, this should always be the case
 //			FIFO_Read(FIFO_EP0, 8, (unsigned char *)&Setup);
-			FIFO_Read_generic(FIFO_EP0, 8, (BYTE *)&Setup);
+//			FIFO_Read_generic(FIFO_EP0, 8, (BYTE *)&Setup);
 //			FIFO_Read_idata(FIFO_EP0, 8, (BYTE idata *)&Setup);
 //			FIFO_Read_pdata(FIFO_EP0, 8, (BYTE pdata *)&Setup);
 //			FIFO_Read_xdata(FIFO_EP0, 8, (BYTE xdata *)&Setup);
+			Fifo_Read(FIFO_EP0, 8, (BYTE *)&Setup);
+
 										// Get Setup Packet off of Fifo
 #if defined BIG_ENDIAN
 										// As the USB custom, multi-byte number is LSB first - little endian
@@ -393,8 +505,8 @@ static void Handle_Setup(void)
 				if (DataSize >= EP0_PACKET_SIZE)
 				{									// The data size to send in this cycle is
 													// just EP0_PACKET_SIZE
-//					FIFO_Write( FIFO_EP0, EP0_PACKET_SIZE, (BYTE *)DataPtr );
-					FIFO_Write_generic( FIFO_EP0, EP0_PACKET_SIZE, (BYTE *)DataPtr );
+					Fifo_Write( FIFO_EP0, EP0_PACKET_SIZE, (BYTE *)DataPtr );
+//					FIFO_Write_generic( FIFO_EP0, EP0_PACKET_SIZE, (BYTE *)DataPtr );
 					DataPtr += EP0_PACKET_SIZE;			// Advance data pointer
 					DataSize -= EP0_PACKET_SIZE;		// Decrement data size
 					if ( send_eq_requested && (DataSize == 0) )	// In this case, no need to send ZLP,
@@ -404,8 +516,8 @@ static void Handle_Setup(void)
 					}
 				} else {							// The data size to send in this cycle is
 													// smaller than EP0_PACKET_SIZE or zero (ZLP)
-//					FIFO_Write( FIFO_EP0, (BYTE)DataSize, (BYTE *)DataPtr );
-					FIFO_Write_generic( FIFO_EP0, (BYTE)DataSize, (BYTE *)DataPtr );
+					Fifo_Write( FIFO_EP0, (BYTE)DataSize, (BYTE *)DataPtr );
+//					FIFO_Write_generic( FIFO_EP0, (BYTE)DataSize, (BYTE *)DataPtr );
 					TempReg |= rbDATAEND;
 					Ep_Status0 = EP_IDLE;
 				}
@@ -447,64 +559,7 @@ static void Handle_Setup(void)
 	} // end of EP_RX
 */
 }
-
-//-----------------------------------------------------------------------------
-// Fifo_Read
-//-----------------------------------------------------------------------------
-//
-// Return Value : None
-// Parameters	:
-//					1) BYTE addr : target address
-//					2) BYTE uNumBytes : number of bytes to unload
-//					3) BYTE * pData : read data destination
-//
-// Read from the selected endpoint FIFO
-//
-//-----------------------------------------------------------------------------
-/*
-void Fifo_Read(BYTE addr, BYTE uNumBytes, BYTE * pData)
-{
-	BYTE idx;
-
-	while(USB0ADR & 0x80);				// Wait for BUSY->'0'
-	USB0ADR = addr | 0xC0;				// Set address
-										// Set auto-read and initiate first read
-										// Read <NumBytes> from the selected FIFO
-	for ( idx = 0; idx < uNumBytes; idx++ ) {
-		while(USB0ADR & 0x80);			// Wait for BUSY->'0' (read complete)
-		pData[ idx ] = USB0DAT;
-	}
-	USB0ADR = 0;						// Clear auto-read
-}
-*/
-//-----------------------------------------------------------------------------
-// Fifo_Write
-//-----------------------------------------------------------------------------
-//
-// Return Value : None
-// Parameters	:
-//					1) BYTE addr : target address
-//					2) BYTE uNumBytes : number of bytes to unload
-//					3) BYTE * pData : location of source data
-//
-// Write to the selected endpoint FIFO
-//
-//-----------------------------------------------------------------------------
-/*
-void Fifo_Write(BYTE addr, BYTE uNumBytes, BYTE * pData)
-{
-	BYTE idx;
-
-	while(USB0ADR & 0x80);				// Wait for BUSY->'0'
-	USB0ADR = (addr & 0x3F);			// Set address (mask out bits7-6)
-
-	// Write <NumBytes> to the selected FIFO
-	for ( idx = 0; idx < uNumBytes; idx++ ) {
-		while(USB0ADR & 0x80);			// Wait for BUSY->'0' (write complete)
-		USB0DAT = pData[ idx ];
-	}
-}
-*/
+										
 //-----------------------------------------------------------------------------
 // POLL_READ_BYTE, POLL_WRITE_BYTE
 //-----------------------------------------------------------------------------

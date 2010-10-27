@@ -10,7 +10,6 @@
 #include "USB_Register.h"
 #include "USB_Standard_Requests.h"
 #include "USB_ISR.h"
-#include "FIFO_RW.h"
 
 #include <intrins.h>		// for _testbit_(), _nop_()
 
@@ -81,6 +80,50 @@ void fill_packet( void )
 	In_Packet[3] = 'l';			
 	In_Packet[4] = 'o';			
 }
+void fifo_read(u8 addr, u8 uNumBytes, u8 * pData)
+{
+	u8 idx;
+
+	while(USB0ADR & 0x80);				// Wait for BUSY->'0'
+	USB0ADR = addr | 0xC0;				// Set address
+										// Set auto-read and initiate first read
+										// Read <NumBytes> from the selected FIFO
+	for ( idx = 0; idx < uNumBytes; idx++ )
+	{
+		while(USB0ADR & 0x80);			// Wait for BUSY->'0' (read complete)
+		pData[ idx ] = USB0DAT;
+	}
+	USB0ADR = 0;						// Clear auto-read
+}
+
+//-----------------------------------------------------------------------------
+// Fifo_Write
+//-----------------------------------------------------------------------------
+//
+// Return Value : None
+// Parameters	:
+//					1) u8 addr : target address
+//					2) u8 uNumBytes : number of bytes to unload
+//					3) u8 * pData : location of source data
+//
+// Write to the selected endpoint FIFO
+//
+//-----------------------------------------------------------------------------
+
+void fifo_write(u8 addr, u8 uNumBytes, u8 * pData)
+{
+	u8 idx;
+
+	while(USB0ADR & 0x80);				// Wait for BUSY->'0'
+	USB0ADR = (addr & 0x3F);			// Set address (mask out bits7-6)
+
+	// Write <NumBytes> to the selected FIFO
+	for ( idx = 0; idx < uNumBytes; idx++ )
+	{
+		while(USB0ADR & 0x80);			// Wait for BUSY->'0' (write complete)
+		USB0DAT = pData[ idx ];
+	}
+}
 
 void main(void)
 {
@@ -117,7 +160,8 @@ void main(void)
                     EIE1 &= ~0x02;							//   disable USB interrupt temporarily
                     POLL_WRITE_BYTE( INDEX, 1 );			// Load packet to FIFO
                     //FIFO_Write_idata( FIFO_EP1, EP1_PACKET_SIZE, In_Packet );
-                    FIFO_Write_generic( FIFO_EP1, EP1_PACKET_SIZE, In_Packet );
+                    //FIFO_Write_generic( FIFO_EP1, EP1_PACKET_SIZE, In_Packet );
+                    fifo_write( FIFO_EP1, EP1_PACKET_SIZE, In_Packet );
                     //FIFO_Write( FIFO_EP1, EP1_PACKET_SIZE, In_Packet );
                     POLL_WRITE_BYTE( EINCSRL, rbInINPRDY );	// set FIFO ready flag
                     EIE1 |= EUSB0_save;						// restore USB interrupt
@@ -138,7 +182,8 @@ void main(void)
                     EIE1 &= ~0x02;							//   disable USB interrupt temporarily
                     POLL_WRITE_BYTE( INDEX, 1 );			// unload packet from FIFO
                     //FIFO_Read_idata( FIFO_EP1, EP1_PACKET_SIZE, Out_Packet );
-                    FIFO_Read_generic( FIFO_EP1, EP1_PACKET_SIZE, Out_Packet );
+                    //FIFO_Read_generic( FIFO_EP1, EP1_PACKET_SIZE, Out_Packet );
+					fifo_read( FIFO_EP1, EP1_PACKET_SIZE, Out_Packet );
                     POLL_WRITE_BYTE( EOUTCSRL, 0 );			// Clear Out Packet ready bit
                     EIE1 |= EUSB0_save;						// restore USB interrupt
 
