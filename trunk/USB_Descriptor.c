@@ -166,7 +166,8 @@ BYTE code HID_report_desc[] =
 	
     0x85, REPORTID_DEBUGINFO,			// 	   REPORT_ID (Debug info)
 //    0x06, 0x00, 0xff,                   //    USAGE_PAGE (Vendor Defined Page)
-    0x96, 0x3f, 0x00,					//	  IN_BLINK_SELECTORSize,   //   REPORT_COUNT ()
+//    0x96, 0x3f, 0x00,					//	  IN_BLINK_SELECTORSize,   //   REPORT_COUNT ()
+    0x96, (REPORT_DEBUG_INFO_LEN&0x00ff), (REPORT_DEBUG_INFO_LEN&0xff00)>>8,					//	  IN_BLINK_SELECTORSize,   //   REPORT_COUNT ()
     0x75, 0x08,                    		//   REPORT_SIZE (8)
     0x26, 0xff, 0x00,              		//   LOGICAL_MAXIMUM (255)
     0x15, 0x00,                    		//   LOGICAL_MINIMUM (0)
@@ -229,7 +230,7 @@ Tconfiguration_desc_set code ConfigDescSet =
 	IN_EP1,									// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
 	LE( EP1_PACKET_SIZE ), 					// MaxPacketSize
-	10,										// bInterval
+	2,										// bInterval
   },
   {										// Endpoint1 OUT descriptor
 	sizeof(Tendpoint_descriptor),			// bLength
@@ -237,7 +238,7 @@ Tconfiguration_desc_set code ConfigDescSet =
 	OUT_EP1,								// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
 	LE( EP1_PACKET_SIZE ), 					// MaxPacketSize
-	10										// bInterval
+	2										// bInterval
   }
 }; //end of Configuration
 

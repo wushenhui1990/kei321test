@@ -93,7 +93,7 @@ void Class_Request( void )
 //
 //-----------------------------------------------------------------------------
 //extern BYTE   idata Out_Packet[ EP1_PACKET_SIZE ];		// Last packet received from host
-extern BYTE   idata In_Packet[ EP1_PACKET_SIZE ];		// Next packet to sent to host
+BYTE   In_Packet[ EP1_PACKET_SIZE+32 ];		// Next packet to sent to host
 
 
 /*
@@ -102,15 +102,21 @@ extern BYTE   idata In_Packet[ EP1_PACKET_SIZE ];		// Next packet to sent to hos
 #define REPORTID_FEATURE	0x33
 #define REPORTID_CONTROL	0x44
 */
-void fill_report_packet( unsigned char report_id )
+
+
+void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)
 {
+	unsigned char i;
 	if(report_id==REPORTID_MTOUCH)
 	{
 		In_Packet[0] = REPORTID_MTOUCH;			
 		In_Packet[1] = 'a';		
 		In_Packet[2] = 'a';			
 		In_Packet[3] = 'a';			
-		In_Packet[4] = 'a';			
+		In_Packet[4] = 'a';	
+
+		rp_buff->rp_buff = &In_Packet[0];
+		rp_buff->rp_len = 0;
 	}
 	else if(report_id==REPORTID_DEBUGINFO)
 	{
@@ -120,10 +126,13 @@ void fill_report_packet( unsigned char report_id )
 		In_Packet[3] = 'b';			
 		In_Packet[4] = 'u';	
 		In_Packet[5] = 'g';		
-		In_Packet[6] = 'i';		
-		In_Packet[7] = 'n';			
-		In_Packet[8] = 'f';			
-		In_Packet[9] = 'o';		
+	
+		for(i=6;i<=REPORT_DEBUG_INFO_LEN;i++)
+			In_Packet[i] = i;
+			
+		
+		rp_buff->rp_buff = &In_Packet[0];
+		rp_buff->rp_len = REPORT_DEBUG_INFO_LEN+1;
 
 	}
 	else if(report_id==REPORTID_FEATURE)
@@ -132,7 +141,10 @@ void fill_report_packet( unsigned char report_id )
 		In_Packet[1] = 'c';		
 		In_Packet[2] = 'c';			
 		In_Packet[3] = 'c';			
-		In_Packet[4] = 'c';			
+		In_Packet[4] = 'c';	
+		
+		rp_buff->rp_buff = &In_Packet[0];
+		rp_buff->rp_len = 0;
 
 	}
 	else if(report_id==REPORTID_CONTROL)
@@ -141,7 +153,10 @@ void fill_report_packet( unsigned char report_id )
 		In_Packet[1] = 'd';		
 		In_Packet[2] = 'd';			
 		In_Packet[3] = 'd';			
-		In_Packet[4] = 'd';			
+		In_Packet[4] = 'd';	
+		
+		rp_buff->rp_buff = &In_Packet[0];
+		rp_buff->rp_len = 0;
 	}
 }
 
@@ -150,12 +165,14 @@ static void Get_Report( void )
 	if (   (Setup.bmRequestType == IN_CL_INTERFACE)	)
 	//	&& (Setup.wValue.c[LSB] == 0) )				// Report ID
 	{
+		rp_buff_st rp_buff;
+		
 		switch ( Setup.wValue.c[MSB] )
 		{
 			case HID_REPORT_TYPE_INPUT:				// Input report
-				fill_report_packet(Setup.wValue.c[LSB]);
-				DataPtr = (BYTE *)In_Packet;
-				DataSize = EP1_PACKET_SIZE;
+				fill_report_packet(Setup.wValue.c[LSB],&rp_buff);
+				DataPtr = rp_buff.rp_buff;
+				DataSize = rp_buff.rp_len;//EP1_PACKET_SIZE;
 				setup_handled = TRUE;
 				break;
 /*

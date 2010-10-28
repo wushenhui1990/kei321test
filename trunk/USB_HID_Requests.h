@@ -34,6 +34,13 @@
 // Prototypes
 //-----------------------------------------------------------------------------
 
+typedef struct report_buff_st
+{
+	unsigned char*	rp_buff;
+	unsigned int	rp_len;
+}rp_buff_st;
+
+
 extern void Class_Request( void );
 
 
