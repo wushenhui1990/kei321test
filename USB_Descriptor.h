@@ -134,6 +134,9 @@ typedef struct {
 //------------------------------------------
 // Report ID Definition
 //------------------------------------------
+
+#define REPORT_DEBUG_INFO_LEN		63
+
 #define REPORTID_MTOUCH		0x01
 #define REPORTID_DEBUGINFO  0x22
 #define REPORTID_FEATURE	0x33
