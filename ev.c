@@ -58,10 +58,12 @@ char event_send(u8 ev_id) reentrant
 //static unsigned long debug_cnt=0;
 void event_process(void)  reentrant
 {
-	u8  xdata ev_id;
-	
+	u8  xdata ev_id;	
+	//u8  ea_save = IE;
+
 	if(g_ev_len) 
 	{
+
  		EA = 0;
 
 

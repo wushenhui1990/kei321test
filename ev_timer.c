@@ -27,6 +27,7 @@ void timer_event_init(void)
 char timer_event_add(timer_ev_unit_st*ev_unit)
 {
 	char xdata ret = 0;
+	//bit ea_save = EA;
 
 	EA = 0;
 
@@ -56,6 +57,7 @@ char timer_event_del(u8 ev_id)
 	u8 xdata i;
 	u8 xdata j;
 	u8 xdata ret = 0;
+ 	bit ea_save = EA;
 
 	EA =0;
 
@@ -75,7 +77,7 @@ char timer_event_del(u8 ev_id)
 		}
 	}
 
-	EA =1;
+	EA =ea_save;
 
 	return ret;
 }

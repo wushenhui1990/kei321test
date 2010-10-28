@@ -84,20 +84,20 @@ void send_packet (unsigned char ReportID)
 	EAState = EA;
 	EA = 0;
 
-	//POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
+//	POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
 
 	// Read contol register for EP 1
-	//POLL_READ_BYTE (EINCSRL, ControlReg);
+//	POLL_READ_BYTE (EINCSRL, ControlReg);
 
 	//if (Ep_StatusIN1== EP_HALT)        // If endpoint is currently halted,
 	//                               // send a stall
 	//{
 	//	POLL_WRITE_BYTE (EINCSRL, rbInSDSTL);
-	//}
+//	}
 
 //	else if(Ep_StatusIN1== EP_IDLE)
 //	if((Ep_StatusIN1!=EP_HALT) && _testbit_( IN_FIFO_empty ))
-	if((Ep_StatusIN1!=EP_HALT))
+	if((Ep_StatusIN1==EP_IDLE))
 	{
 		//Ep_StatusIN1 = EP_TX;			// the state will be updated inside the ISR handler
 
@@ -180,15 +180,20 @@ extern u8 	g_ev_tail;
 extern u8 	g_ev_len;
 
 
-#define	TRIG_TIME	200
+#define	TRIG_TIME	10
 static void  func_for_debug(void) 
 {
 	//u8 i=4;
 
 //	F(("status:%ld [%02bx][%02bx][%02bx]\n",g_ticks/1000,g_ev_head,g_ev_tail,g_ev_len));
 
-	//while(i--)	  
-		send_packet(REPORTID_DEBUGINFO);
+	//while(i--)
+//	if(Ep_StatusIN1)
+//		F(("ep1_sta: 1\n"));	  
+//	else
+// 		F(("ep1_sta: 0\n"));	  
+	//	if ( Ep_StatusIN1 != EP_HALT )
+			send_packet(REPORTID_DEBUGINFO);
 
 	return;
 }

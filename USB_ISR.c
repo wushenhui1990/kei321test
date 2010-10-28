@@ -655,7 +655,7 @@ static void Handle_In1(void)
 		POLL_WRITE_BYTE (INDEX, 1); 		// Set index to endpoint 1 registers
 		// Read contol register for EP 1
 		POLL_READ_BYTE (EINCSRL, ControlReg);
-/*		  
+		  
 		if (ControlReg & rbInSTSTL) 	 // Clear sent stall if last
 								   // packet returned a stall
 		{
@@ -666,7 +666,7 @@ static void Handle_In1(void)
 		{
 			POLL_WRITE_BYTE (EINCSRL, 0x00);
 		}
-*/
+
 		// Put new data on Fifo
 		if(g_usb_data_send_residual>EP1_PACKET_SIZE)
 		{
