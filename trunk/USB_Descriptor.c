@@ -49,7 +49,7 @@ Tdevice_descriptor code DeviceDesc =
 // HID report descriptor
 //		placed here because the size of this array is referred in config:HID class desc
 //
-/*
+#if 0
 BYTE code HID_report_desc[] =
 {
 	0x06, 0x00, 0xff,						// USAGE_PAGE (Vendor Defined Page 1)
@@ -65,7 +65,8 @@ BYTE code HID_report_desc[] =
 	0x91, 0x02,								//	OUTPUT (Data,Var,Abs)
 	0xc0									// END_COLLECTION
 };
-*/
+
+#else
 BYTE code HID_report_desc[] =
 {
     0x05, 0x0d,                         // USAGE_PAGE (Digitizers)
@@ -137,6 +138,7 @@ BYTE code HID_report_desc[] =
     0x46, 0x00, 0x00,                   //       PHYSICAL_MAXIMUM (0)
     0x81, 0x02,                         //       INPUT (Data,Var,Abs)
     0xc0,                               //    END_COLLECTION
+
 	0x05, 0x0d, 						//	  USAGE_PAGE (Digitizers)
 	0x09, 0x54, 						//	  USAGE (Contact Count)
 	0x95, 0x01, 						//	  REPORT_COUNT (1)
@@ -186,6 +188,8 @@ BYTE code HID_report_desc[] =
 	0xc0                                // END_COLLECTION
 #endif
 };
+#endif
+
 
 BYTE code HID_report_desc_size = sizeof( HID_report_desc );		// export report desc size
 																// Original idea by Patryk

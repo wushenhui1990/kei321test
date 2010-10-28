@@ -138,13 +138,11 @@ void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)
 	else if(report_id==REPORTID_FEATURE)
 	{
 		In_Packet[0] = REPORTID_FEATURE;			
-		In_Packet[1] = 'c';		
-		In_Packet[2] = 'c';			
-		In_Packet[3] = 'c';			
-		In_Packet[4] = 'c';	
+		In_Packet[1] = 2;		
+			
 		
 		rp_buff->rp_buff = &In_Packet[0];
-		rp_buff->rp_len = 0;
+		rp_buff->rp_len = 2;
 
 	}
 	else if(report_id==REPORTID_CONTROL)
@@ -175,13 +173,14 @@ static void Get_Report( void )
 				DataSize = rp_buff.rp_len;//EP1_PACKET_SIZE;
 				setup_handled = TRUE;
 				break;
-/*
+
 			case HID_REPORT_TYPE_FEATURE:			// Feature report
-				DataPtr = (BYTE *)cs_temp_buffer;
-				DataSize = CS_TEMP_BUF_SIZE;
+				fill_report_packet(Setup.wValue.c[LSB],&rp_buff);
+				DataPtr = rp_buff.rp_buff;
+				DataSize = rp_buff.rp_len;;
 				setup_handled = TRUE;
 				break;
-*/
+
 			default:
 				break;
 		}
