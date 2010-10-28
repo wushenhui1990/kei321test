@@ -66,15 +66,17 @@ void event_process(void)  reentrant
 
 
 		ev_id = g_ev_event[g_ev_head]; 					//get ev
+
+		(*g_ev_handler[ev_id])();    
+
 		g_ev_event[g_ev_head]= EVENT_ID_INVALID;		//reset ev
 
-		F(("---[%bx] [%bx][%bx][%bx]\r\n",ev_id,g_ev_head,g_ev_tail,g_ev_len));
+		//F(("---[%bx] [%bx][%bx][%bx]\r\n",ev_id,g_ev_head,g_ev_tail,g_ev_len));
 
 		g_ev_head = (g_ev_head+1)% MAX_EVENT_QUEUE;	  //update header and len		
 		g_ev_len--;		
 
 
-		(*g_ev_handler[ev_id])();    
 
 		EA =1;
 	}
