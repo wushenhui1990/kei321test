@@ -54,8 +54,10 @@ void flash_rw_test(void)
 
 void test_func(void)
 {
+		
+   //F(("\nsizeof(short)=%02bx\nsizeof(int)=%02bx\nsizeof(long)=%02bx\n\n",sizeof(short),sizeof(int),sizeof(long)));
 
-  flash_rw_test();
+  	flash_rw_test();
 
 }
 

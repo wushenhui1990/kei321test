@@ -129,6 +129,15 @@ typedef struct {
 #define DSC_SUBTYPE_CS_HID_REPORT	0x22
 #define DSC_SUBTYPE_CS_HID_PHYSICAL	0x23
 
+
+
+//------------------------------------------
+// Report ID Definition
+//------------------------------------------
+#define REPORTID_MTOUCH		0x01
+#define REPORTID_DEBUGINFO  0x22
+#define REPORTID_FEATURE	0x33
+#define REPORTID_CONTROL	0x44
 //-----------------------------------------------------------------------------
 // Global variables
 //-----------------------------------------------------------------------------

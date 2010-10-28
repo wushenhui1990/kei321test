@@ -12,7 +12,7 @@
 #include "USB_ISR.h"
 //#include "USB_Main.h"
 #include "USB_HID_Requests.h"
-
+#include "USB_Descriptor.h"
 //-----------------------------------------------------------------------------
 // Global Variables
 //-----------------------------------------------------------------------------
@@ -92,19 +92,68 @@ void Class_Request( void )
 //	Input and feature report are supported
 //
 //-----------------------------------------------------------------------------
-extern void fill_packet( void ) ;
-extern BYTE   idata Out_Packet[ EP1_PACKET_SIZE ];		// Last packet received from host
+//extern BYTE   idata Out_Packet[ EP1_PACKET_SIZE ];		// Last packet received from host
 extern BYTE   idata In_Packet[ EP1_PACKET_SIZE ];		// Next packet to sent to host
+
+
+/*
+#define REPORTID_MTOUCH		0x01
+#define REPORTID_DEBUGINFO  0x22
+#define REPORTID_FEATURE	0x33
+#define REPORTID_CONTROL	0x44
+*/
+void fill_report_packet( unsigned char report_id )
+{
+	if(report_id==REPORTID_MTOUCH)
+	{
+		In_Packet[0] = REPORTID_MTOUCH;			
+		In_Packet[1] = 'a';		
+		In_Packet[2] = 'a';			
+		In_Packet[3] = 'a';			
+		In_Packet[4] = 'a';			
+	}
+	else if(report_id==REPORTID_DEBUGINFO)
+	{
+		In_Packet[0] = REPORTID_DEBUGINFO;			
+		In_Packet[1] = 'd';		
+		In_Packet[2] = 'e';			
+		In_Packet[3] = 'b';			
+		In_Packet[4] = 'u';	
+		In_Packet[5] = 'g';		
+		In_Packet[6] = 'i';		
+		In_Packet[7] = 'n';			
+		In_Packet[8] = 'f';			
+		In_Packet[9] = 'o';		
+
+	}
+	else if(report_id==REPORTID_FEATURE)
+	{
+		In_Packet[0] = REPORTID_FEATURE;			
+		In_Packet[1] = 'c';		
+		In_Packet[2] = 'c';			
+		In_Packet[3] = 'c';			
+		In_Packet[4] = 'c';			
+
+	}
+	else if(report_id==REPORTID_CONTROL)
+	{
+		In_Packet[0] = REPORTID_CONTROL;			
+		In_Packet[1] = 'd';		
+		In_Packet[2] = 'd';			
+		In_Packet[3] = 'd';			
+		In_Packet[4] = 'd';			
+	}
+}
 
 static void Get_Report( void )
 {
-	if (   (Setup.bmRequestType == IN_CL_INTERFACE)
-		&& (Setup.wValue.c[LSB] == 0) )				// Report ID
+	if (   (Setup.bmRequestType == IN_CL_INTERFACE)	)
+	//	&& (Setup.wValue.c[LSB] == 0) )				// Report ID
 	{
 		switch ( Setup.wValue.c[MSB] )
 		{
 			case HID_REPORT_TYPE_INPUT:				// Input report
-				fill_packet();
+				fill_report_packet(Setup.wValue.c[LSB]);
 				DataPtr = (BYTE *)In_Packet;
 				DataSize = EP1_PACKET_SIZE;
 				setup_handled = TRUE;
