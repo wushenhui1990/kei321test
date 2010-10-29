@@ -96,7 +96,7 @@ typedef struct {
 		Tinterface_descriptor				m_interface_desc_0;
 			THID_class_descriptor			m_HID_class_descriptor;	// HID IF
 			Tendpoint_descriptor			m_endpoint_desc_IN1;
-			Tendpoint_descriptor			m_endpoint_desc_OUT2;
+			Tendpoint_descriptor			m_endpoint_desc_OUT1;
 } Tconfiguration_desc_set;
 
 
@@ -134,7 +134,7 @@ typedef struct {
 //------------------------------------------
 // Report ID Definition
 //------------------------------------------
-
+#define	REPORT_MTOUCH_LEN			13
 #define REPORT_DEBUG_INFO_LEN		63
 
 #define REPORTID_MTOUCH		0x01

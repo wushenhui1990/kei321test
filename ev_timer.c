@@ -51,7 +51,7 @@ char timer_event_add(timer_ev_unit_st*ev_unit)
 
 	return ret;
 }
-
+/*
 char timer_event_del(u8 ev_id)
 {
 	u8 xdata i;
@@ -81,6 +81,7 @@ char timer_event_del(u8 ev_id)
 
 	return ret;
 }
+*/
 void timer_event_process(void)
 {
 	u8 xdata i;
