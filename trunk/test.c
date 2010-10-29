@@ -1,7 +1,7 @@
 #include "uart.h"
 #include "flash_rw.h"
 
-#if 0
+#if 1
 void flash_rw_test(void)
 {
    #define FLASH_WRITE_ADDR		0x3900

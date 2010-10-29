@@ -108,7 +108,7 @@ char event_cb_regist(u8 ev_id,void (*pFunc)(void))
 	g_ev_handler[ev_id] = pFunc;
 	return 1;
 }
-
+/*
 char event_cb_unregist(u8 ev_id)
 {
 	if(ev_id>= MAX_EVENT_QUEUE)
@@ -122,4 +122,6 @@ char event_cb_unregist(u8 ev_id)
 		return 0;
 	}
 	g_ev_handler[ev_id] = ev_default_handler;
-	return 1;}
+	return 1;
+}
+*/

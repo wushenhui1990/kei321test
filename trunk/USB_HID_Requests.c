@@ -104,7 +104,7 @@ BYTE   In_Packet[ EP1_PACKET_SIZE+32 ];		// Next packet to sent to host
 */
 
 
-void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)
+void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)  reentrant
 {
 	unsigned char i;
 	if(report_id==REPORTID_MTOUCH)
@@ -116,7 +116,7 @@ void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)
 		In_Packet[4] = 'a';	
 
 		rp_buff->rp_buff = &In_Packet[0];
-		rp_buff->rp_len = 0;
+		rp_buff->rp_len = REPORT_MTOUCH_LEN+1;
 	}
 	else if(report_id==REPORTID_DEBUGINFO)
 	{

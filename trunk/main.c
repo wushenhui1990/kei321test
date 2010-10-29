@@ -25,7 +25,7 @@ extern unsigned int		g_usb_data_send_transfed ;
 extern unsigned int		g_usb_data_send_residual ;
 
 
-extern void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff);
+extern void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff) reentrant;
 
 //extern void fill_report_packet( unsigned char report_id );
 
@@ -180,12 +180,11 @@ extern u8 	g_ev_tail;
 extern u8 	g_ev_len;
 
 
-#define	TRIG_TIME	10
+#define	TRIG_TIME	1000
 static void  func_for_debug(void) 
 {
-	//u8 i=4;
 
-//	F(("status:%ld [%02bx][%02bx][%02bx]\n",g_ticks/1000,g_ev_head,g_ev_tail,g_ev_len));
+	F(("status:%ld [%02bx][%02bx][%02bx]\n",g_ticks/1000,g_ev_head,g_ev_tail,g_ev_len));
 
 	//while(i--)
 //	if(Ep_StatusIN1)
@@ -193,7 +192,9 @@ static void  func_for_debug(void)
 //	else
 // 		F(("ep1_sta: 0\n"));	  
 	//	if ( Ep_StatusIN1 != EP_HALT )
-			send_packet(REPORTID_DEBUGINFO);
+			//send_packet(REPORTID_DEBUGINFO);
+			
+			send_packet(REPORTID_MTOUCH);
 
 	return;
 }

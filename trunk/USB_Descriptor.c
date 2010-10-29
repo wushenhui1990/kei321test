@@ -49,7 +49,8 @@ Tdevice_descriptor code DeviceDesc =
 // HID report descriptor
 //		placed here because the size of this array is referred in config:HID class desc
 //
-#if 0
+#if 1
+/*
 BYTE code HID_report_desc[] =
 {
 	0x06, 0x00, 0xff,						// USAGE_PAGE (Vendor Defined Page 1)
@@ -65,6 +66,102 @@ BYTE code HID_report_desc[] =
 	0x91, 0x02,								//	OUTPUT (Data,Var,Abs)
 	0xc0									// END_COLLECTION
 };
+*/
+
+	BYTE code HID_report_desc[] =
+	{
+		0x05, 0x0d, 						// USAGE_PAGE (Digitizers)
+		0x09, 0x04, 						// USAGE (Touch Screen)
+		0xa1, 0x01, 						// COLLECTION (Application)
+	
+		0x85, REPORTID_MTOUCH,				   //	REPORT_ID (Touch)
+		0x09, 0x22, 						//	 USAGE (Finger)
+		0xa1, 0x02, 						//	   COLLECTION (Logical)
+		0x09, 0x42, 						//		 USAGE (Tip Switch)
+		0x15, 0x00, 						//		 LOGICAL_MINIMUM (0)
+		0x25, 0x01, 						//		 LOGICAL_MAXIMUM (1)
+		0x75, 0x01, 						//		 REPORT_SIZE (1)
+		0x95, 0x01, 						//		 REPORT_COUNT (1)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+		0x09, 0x32, 						//		 USAGE (In Range)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+	//	  0x09, 0x47,						  //	   USAGE (Touch Valid)
+	//	  0x81, 0x02,						  //	   INPUT (Data,Var,Abs)
+	//	  0x95, 0x05,						  //	   REPORT_COUNT (5)
+		0x95, 0x06, 						//		 REPORT_COUNT (6)
+		0x81, 0x03, 						//		 INPUT (Cnst,Ary,Abs)
+		0x75, 0x08, 						//		 REPORT_SIZE (8)
+		0x09, 0x51, 						//		 USAGE (Contact Identifier)
+		0x95, 0x01, 						//		 REPORT_COUNT (1)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+		0x05, 0x01, 						//		 USAGE_PAGE (Generic Desk..
+		0x26, 0xff, 0x7f,					//		 LOGICAL_MAXIMUM (32767)
+		0x75, 0x10, 						//		 REPORT_SIZE (16)
+		0x55, 0x00, 						//		 UNIT_EXPONENT (0)
+		0x65, 0x00, 						//		 UNIT (None)
+		0x09, 0x30, 						//		 USAGE (X)
+		0x35, 0x00, 						//		 PHYSICAL_MINIMUM (0)
+		0x46, 0x00, 0x00,					//		 PHYSICAL_MAXIMUM (0)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+		0x09, 0x31, 						//		 USAGE (Y)
+		0x46, 0x00, 0x00,					//		 PHYSICAL_MAXIMUM (0)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+		0xc0,								//	  END_COLLECTION
+		0xa1, 0x02, 						//	  COLLECTION (Logical)
+		0x05, 0x0d, 						//	   USAGE_PAGE (Digitizers)
+		0x09, 0x42, 						//		 USAGE (Tip Switch)
+		0x15, 0x00, 						//		 LOGICAL_MINIMUM (0)
+		0x25, 0x01, 						//		 LOGICAL_MAXIMUM (1)
+		0x75, 0x01, 						//		 REPORT_SIZE (1)
+		0x95, 0x01, 						//		 REPORT_COUNT (1)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+		0x09, 0x32, 						//		 USAGE (In Range)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+	//	  0x09, 0x47,						  //	   USAGE (Touch Valid)
+	//	  0x81, 0x02,						  //	   INPUT (Data,Var,Abs)
+	//	  0x95, 0x05,						  //	   REPORT_COUNT (5)
+		0x95, 0x06, 						//		 REPORT_COUNT (6)
+		0x81, 0x03, 						//		 INPUT (Cnst,Ary,Abs)
+		0x75, 0x08, 						//		 REPORT_SIZE (8)
+		0x09, 0x51, 						//		 USAGE ( Cotact Identifier)
+		0x95, 0x01, 						//		 REPORT_COUNT (1)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+		0x05, 0x01, 						//		 USAGE_PAGE (Generic Desk..
+		0x26, 0xff, 0x7f,					//		 LOGICAL_MAXIMUM (32767)
+		0x75, 0x10, 						//		 REPORT_SIZE (16)
+		0x55, 0x00, 						//		 UNIT_EXPONENT (0)
+		0x65, 0x00, 						//		 UNIT (None)
+		0x09, 0x30, 						//		 USAGE (X)
+		0x35, 0x00, 						//		 PHYSICAL_MINIMUM (0)
+		0x46, 0x00, 0x00,					//		 PHYSICAL_MAXIMUM (0)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+		0x09, 0x31, 						//		 USAGE (Y)
+		0x46, 0x00, 0x00,					//		 PHYSICAL_MAXIMUM (0)
+		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
+		0xc0,								//	  END_COLLECTION
+	
+		0x05, 0x0d, 						//	  USAGE_PAGE (Digitizers)
+		0x09, 0x54, 						//	  USAGE (Contact Count)
+		0x95, 0x01, 						//	  REPORT_COUNT (1)
+		0x75, 0x08, 						//	  REPORT_SIZE (8)
+		0x15, 0x00, 						//	  LOGICAL_MINIMUM (0)
+		0x25, 0x02, 						//	  LOGICAL_MAXIMUM (2)
+		0x81, 0x02, 						//	  INPUT (Data,Var,Abs)
+	//	0x95, 0x76, 						//	  REPORT_COUNT (1)
+	//	0x81, 0x03, 						//		 INPUT (Cnst,Ary,Abs)
+	
+		0x85, REPORTID_FEATURE, 			//	  Feature report ID
+	//	  0x05, 0x0d,						  //	USAGE_PAGE (Digitizers)
+	//	  0x09, 0x54,						  //	USAGE (Contact Count)
+	//	  0x95, 0x01,						  //	REPORT_COUNT (1)
+	//	  0x75, 0x08,						  //	REPORT_SIZE (8)
+	//	  0x15, 0x00,						  //	LOGICAL_MINIMUM (0)
+	//	  0x25, 0x08,						  //	LOGICAL_MAXIMUM (8)
+	//	  0x81, 0x02,						  //	INPUT (Data,Var,Abs)
+		0x09, 0x55, 						//	  USAGE(Contact Count Maximum)
+		0xb1, 0x02, 						//	  FEATURE (Data,Var,Abs)	   
+		0xc0,								// END_COLLECTION
+	};
 
 #else
 BYTE code HID_report_desc[] =
