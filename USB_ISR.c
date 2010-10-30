@@ -6,7 +6,7 @@
 // Includes
 //-----------------------------------------------------------------------------
 
-#include "USB_INT_to_HID_Type.h"
+#include "USB_HID_comp_Type.h"
 #include "USB_Configuration.h"
 #include "USB_Register.h"
 #include "USB_Standard_Requests.h"
@@ -21,53 +21,53 @@
 // configuration conditions
 //-----------------------------------------------------------------------------
 
-#if (defined USE_OUT_EP1) && !(defined ENABLE_OUT_EP1_ISO)
-	#define USE_OUT_EP1_STATUS
+#if (defined USE_EP1_OUT) && !(defined ENABLE_EP1_OUT_ISO)
+	#define USE_EP1_OUT_STATUS
 #endif
-#if (defined USE_OUT_EP2) && !(defined ENABLE_OUT_EP2_ISO)
-	#define USE_OUT_EP2_STATUS
+#if (defined USE_EP2_OUT) && !(defined ENABLE_EP2_OUT_ISO)
+	#define USE_EP2_OUT_STATUS
 #endif
-#if (defined USE_OUT_EP3) && !(defined ENABLE_OUT_EP3_ISO)
-	#define USE_OUT_EP3_STATUS
+#if (defined USE_EP3_OUT) && !(defined ENABLE_EP3_OUT_ISO)
+	#define USE_EP3_OUT_STATUS
 #endif
-#if (defined USE_IN_EP1) && !(defined ENABLE_IN_EP1_ISO)
-	#define USE_IN_EP1_STATUS
+#if (defined USE_EP1_IN) && !(defined ENABLE_EP1_IN_ISO)
+	#define USE_EP1_IN_STATUS
 #endif
-#if (defined USE_IN_EP2) && !(defined ENABLE_IN_EP2_ISO)
-	#define USE_IN_EP2_STATUS
+#if (defined USE_EP2_IN) && !(defined ENABLE_EP2_IN_ISO)
+	#define USE_EP2_IN_STATUS
 #endif
-#if (defined USE_IN_EP3) && !(defined ENABLE_IN_EP3_ISO)
-	#define USE_IN_EP3_STATUS
+#if (defined USE_EP3_IN) && !(defined ENABLE_EP3_IN_ISO)
+	#define USE_EP3_IN_STATUS
 #endif
 
 
-#ifdef ENABLE_OUT_EP1_INTERRUPT
+#ifdef ENABLE_EP1_OUT_INTERRUPT
 	#define EP1_OUT_INTEN	rbOUT1E
 #else
 	#define EP1_OUT_INTEN	0
 #endif
-#ifdef ENABLE_OUT_EP2_INTERRUPT
+#ifdef ENABLE_EP2_OUT_INTERRUPT
 	#define EP2_OUT_INTEN	rbOUT2E
 #else
 	#define EP2_OUT_INTEN	0
 #endif
-#ifdef ENABLE_OUT_EP3_INTERRUPT
+#ifdef ENABLE_EP3_OUT_INTERRUPT
 	#define EP3_OUT_INTEN	rbOUT3E
 #else
 	#define EP3_OUT_INTEN	0
 #endif
 
-#ifdef ENABLE_IN_EP1_INTERRUPT
+#ifdef ENABLE_EP1_IN_INTERRUPT
 	#define EP1_IN_INTEN	rbIN1E
 #else
 	#define EP1_IN_INTEN	0
 #endif
-#ifdef ENABLE_IN_EP2_INTERRUPT
+#ifdef ENABLE_EP2_IN_INTERRUPT
 	#define EP2_IN_INTEN	rbIN2E
 #else
 	#define EP2_IN_INTEN	0
 #endif
-#ifdef ENABLE_IN_EP3_INTERRUPT
+#ifdef ENABLE_EP3_IN_INTERRUPT
 	#define EP3_IN_INTEN	rbIN3E
 #else
 	#define EP3_IN_INTEN	0
@@ -95,7 +95,7 @@
 //-----------------------------------------------------------------------------
 
 BYTE          USB_State;			// Hold current usb device state
-Tsetup_buffer  Setup;				// Buffer for current device request
+Tsetup_buffer Setup;				// Buffer for current device request
 bit           setup_handled;		// flag that indicates setup stage is handled or not
 UINT          DataSize;				// Size of data to return
 BYTE*         DataPtr;				// Pointer to data to return
@@ -103,28 +103,32 @@ BYTE*         DataPtr;				// Pointer to data to return
 // Holds the status for each endpoint
 volatile BYTE Ep_Status0		= EP_IDLE;
 
-#ifdef USE_OUT_EP1_STATUS
+#ifdef USE_EP1_OUT_STATUS
 	volatile bit Ep_StatusOUT1	= EP_HALT;
 #endif
-#ifdef USE_OUT_EP2_STATUS
+#ifdef USE_EP2_OUT_STATUS
 	volatile bit Ep_StatusOUT2	= EP_HALT;
 #endif
-#ifdef USE_OUT_EP3_STATUS
+#ifdef USE_EP3_OUT_STATUS
 	volatile bit Ep_StatusOUT3	= EP_HALT;
 #endif
-#ifdef USE_IN_EP1_STATUS
+#ifdef USE_EP1_IN_STATUS
 	volatile bit Ep_StatusIN1	= EP_HALT;
 #endif
-#ifdef USE_IN_EP2_STATUS
+#ifdef USE_EP2_IN_STATUS
 	volatile bit Ep_StatusIN2	= EP_HALT;
 #endif
-#ifdef USE_IN_EP3_STATUS
+#ifdef USE_EP3_IN_STATUS
 	volatile bit Ep_StatusIN3	= EP_HALT;
 #endif
 
 // FIFO status of endpoints
-volatile bit IN_FIFO_empty   = TRUE;
-volatile bit OUT_FIFO_loaded = FALSE;
+volatile bit IN1_FIFO_empty   = TRUE;
+volatile bit IN2_FIFO_empty   = TRUE;
+volatile bit IN3_FIFO_empty   = TRUE;
+volatile bit OUT1_FIFO_loaded = FALSE;
+volatile bit OUT2_FIFO_loaded = FALSE;
+volatile bit OUT3_FIFO_loaded = FALSE;
 
 //-----------------------------------------------------------------------------
 // Static Variables in this file
@@ -167,10 +171,12 @@ void Usb0_Init(void)
 	USB0XCN = 0xE0;						// Enable transceiver; select full speed
 	POLL_WRITE_BYTE(CLKREC, 0x80);		// Enable clock recovery, single-step mode
 										// disabled
-										// Enable USB0 by clearing the USB 
-										// Inhibit bit
 #ifdef ENABLE_SUSPEND_RESUME
+										// Enable USB0 by clearing the USB Inhibit bit
 	POLL_WRITE_BYTE(POWER,	0x01);		// and enable suspend detection
+#else
+										// Enable USB0 by clearing the USB Inhibit bit
+	POLL_WRITE_BYTE(POWER,	0x00);
 #endif
 
 }
@@ -204,25 +210,29 @@ void Usb_ISR(void) interrupt 8			// Top-level USB ISR
 										// Handle Reset interrupt
 	if (bCommon & rbRSTINT) {	Usb_Reset();	}
 										// Handle EP1-3 interrupt
-#ifdef ENABLE_OUT_EP1_INTERRUPT
+#ifdef ENABLE_EP1_OUT_INTERRUPT
 //	if (bOut & rbOUT1) {		Handle_Out1();	}
-	if (bOut & rbOUT1) {		OUT_FIFO_loaded = TRUE;	}
+	if (bOut & rbOUT1) {		OUT1_FIFO_loaded = TRUE;	}
 #endif
-#ifdef ENABLE_OUT_EP2_INTERRUPT
-	if (bOut & rbOUT2) {		Handle_Out2();	}
+#ifdef ENABLE_EP2_OUT_INTERRUPT
+//	if (bOut & rbOUT2) {		Handle_Out2();	}
+	if (bOut & rbOUT2) {		OUT2_FIFO_loaded = TRUE;	}
 #endif
-#ifdef ENABLE_OUT_EP3_INTERRUPT
-	if (bOut & rbOUT3) {		Handle_Out3();	}
+#ifdef ENABLE_EP3_OUT_INTERRUPT
+//	if (bOut & rbOUT3) {		Handle_Out3();	}
+	if (bOut & rbOUT3) {		OUT3_FIFO_loaded = TRUE;	}
 #endif
-#ifdef ENABLE_IN_EP1_INTERRUPT
+#ifdef ENABLE_EP1_IN_INTERRUPT
 	if (bIn & rbIN1) {			Handle_In1();	}
-//	if (bIn & rbIN1) {			IN_FIFO_empty = TRUE;	}
+//	if (bIn & rbIN1) {			IN1_FIFO_empty = TRUE;	}
 #endif
-#ifdef ENABLE_IN_EP2_INTERRUPT
-	if (bIn & rbIN2) {			Handle_In2();	}
+#ifdef ENABLE_EP2_IN_INTERRUPT
+//	if (bIn & rbIN2) {			Handle_In2();	}
+	if (bIn & rbIN2) {			IN2_FIFO_empty = TRUE;	}
 #endif
-#ifdef ENABLE_IN_EP3_INTERRUPT
-	if (bIn & rbIN3) {			Handle_In3();	}
+#ifdef ENABLE_EP3_IN_INTERRUPT
+//	if (bIn & rbIN3) {			Handle_In3();	}
+	if (bIn & rbIN3) {			IN3_FIFO_empty = TRUE;	}
 #endif
 										// Handle EP0 interrupt
 	if (bIn & rbEP0) {			Handle_Setup();	}
@@ -333,22 +343,22 @@ static void Usb_Reset(void)
 
 	Ep_Status0 = EP_IDLE;				// Set default Endpoint Status
 
-#ifdef USE_OUT_EP1_STATUS
+#ifdef USE_EP1_OUT_STATUS
 	Ep_StatusOUT1 = EP_HALT;
 #endif
-#ifdef USE_OUT_EP2_STATUS
+#ifdef USE_EP2_OUT_STATUS
 	Ep_StatusOUT2 = EP_HALT;
 #endif
-#ifdef USE_OUT_EP3_STATUS
+#ifdef USE_EP3_OUT_STATUS
 	Ep_StatusOUT3 = EP_HALT;
 #endif
-#ifdef USE_IN_EP1_STATUS
+#ifdef USE_EP1_IN_STATUS
 	Ep_StatusIN1  = EP_HALT;
 #endif
-#ifdef USE_IN_EP2_STATUS
+#ifdef USE_EP2_IN_STATUS
 	Ep_StatusIN2  = EP_HALT;
 #endif
-#ifdef USE_IN_EP3_STATUS
+#ifdef USE_EP3_IN_STATUS
 	Ep_StatusIN3  = EP_HALT;
 #endif
 
@@ -596,7 +606,7 @@ void POLL_WRITE_BYTE( BYTE addr, BYTE dt )
 //	Handle out packet on Endpoint 1
 //-----------------------------------------------------------------------------
 
-#ifdef ENABLE_OUT_EP1_INTERRUPT
+#ifdef ENABLE_EP1_OUT_INTERRUPT
 /*
 static void Handle_Out1(void)
 {
@@ -610,12 +620,12 @@ static void Handle_Out1(void)
 //	Handle out packet on Endpoint 2
 //-----------------------------------------------------------------------------
 
-#ifdef ENABLE_OUT_EP2_INTERRUPT
-
+#ifdef ENABLE_EP2_OUT_INTERRUPT
+/*
 static void Handle_Out2(void)
 {
 }
-
+*/
 #endif
 
 //-----------------------------------------------------------------------------
@@ -624,12 +634,12 @@ static void Handle_Out2(void)
 //	Handle out packet on Endpoint 3
 //-----------------------------------------------------------------------------
 
-#ifdef ENABLE_OUT_EP3_INTERRUPT
-
+#ifdef ENABLE_EP3_OUT_INTERRUPT
+/*
 static void Handle_Out3(void)
 {
 }
-
+*/
 #endif
 
 //-----------------------------------------------------------------------------
@@ -638,8 +648,8 @@ static void Handle_Out3(void)
 //	Handle in packet on Endpoint 1
 //-----------------------------------------------------------------------------
 
-#ifdef ENABLE_IN_EP1_INTERRUPT
 
+#ifdef ENABLE_EP1_IN_INTERRUPT
 
 unsigned char*	g_usb_data_send_buf = NULL;
 unsigned int	g_usb_data_send_transfed = 0;
@@ -668,12 +678,12 @@ static void Handle_In1(void)
 		}
 
 		// Put new data on Fifo
-		if(g_usb_data_send_residual>EP1_PACKET_SIZE)
+		if(g_usb_data_send_residual>EP1_IN_PACKET_SIZE)
 		{
-			Fifo_Write(FIFO_EP1, EP1_PACKET_SIZE,(unsigned char *)(g_usb_data_send_buf + g_usb_data_send_transfed));
+			Fifo_Write(FIFO_EP1, EP1_IN_PACKET_SIZE,(unsigned char *)(g_usb_data_send_buf + g_usb_data_send_transfed));
 			POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
-			g_usb_data_send_transfed += EP1_PACKET_SIZE;
-			g_usb_data_send_residual -= EP1_PACKET_SIZE;
+			g_usb_data_send_transfed += EP1_IN_PACKET_SIZE;
+			g_usb_data_send_residual -= EP1_IN_PACKET_SIZE;
 		}
 		else
 		{
@@ -694,20 +704,18 @@ static void Handle_In1(void)
 
 #endif
 
-
-
 //-----------------------------------------------------------------------------
 // Handle_In2
 //-----------------------------------------------------------------------------
 //	Handle in packet on Endpoint 2
 //-----------------------------------------------------------------------------
 
-#ifdef ENABLE_IN_EP2_INTERRUPT
-
+#ifdef ENABLE_EP2_IN_INTERRUPT
+/*
 static void Handle_In2(void)
 {
 }
-
+*/
 #endif
 
 //-----------------------------------------------------------------------------
@@ -716,18 +724,21 @@ static void Handle_In2(void)
 //	Handle in packet on Endpoint 3
 //-----------------------------------------------------------------------------
 
-#ifdef ENABLE_IN_EP3_INTERRUPT
-
+#ifdef ENABLE_EP3_IN_INTERRUPT
+/*
 static void Handle_In3(void)
 {
 }
-
+*/
 #endif
 
 //-----------------------------------------------------------------------------
 // Handle_SOF
 //-----------------------------------------------------------------------------
-//	Handle in SOF interrupt
+//	Handle SOF interrupt
+//		SOF interrupt is evoked in 1 ms interval, when enabled
+//		When the device is connected to USB bus, this interrupt synchronizes to SOF
+//		When the device is not connected, the USB engine automatically generates the interval
 //-----------------------------------------------------------------------------
 
 #ifdef ENABLE_SOF_INTERRUPT

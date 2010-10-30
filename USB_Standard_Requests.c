@@ -82,7 +82,7 @@
 // Includes
 //-----------------------------------------------------------------------------
 
-#include "USB_INT_to_HID_Type.h"
+#include "USB_HID_comp_Type.h"
 #include "USB_Configuration.h"
 #include "USB_Register.h"
 #include "USB_Descriptor.h"
@@ -121,23 +121,23 @@ static bit  Set_Halt( BYTE endpoint, BYTE status );
 // configuration conditions
 //-----------------------------------------------------------------------------
 
-#if (defined USE_OUT_EP1) && !(defined ENABLE_OUT_EP1_ISO)
-	#define USE_OUT_EP1_STATUS
+#if (defined USE_EP1_OUT) && !(defined ENABLE_EP1_OUT_ISO)
+	#define USE_EP1_OUT_STATUS
 #endif
-#if (defined USE_OUT_EP2) && !(defined ENABLE_OUT_EP2_ISO)
-	#define USE_OUT_EP2_STATUS
+#if (defined USE_EP2_OUT) && !(defined ENABLE_EP2_OUT_ISO)
+	#define USE_EP2_OUT_STATUS
 #endif
-#if (defined USE_OUT_EP3) && !(defined ENABLE_OUT_EP3_ISO)
-	#define USE_OUT_EP3_STATUS
+#if (defined USE_EP3_OUT) && !(defined ENABLE_EP3_OUT_ISO)
+	#define USE_EP3_OUT_STATUS
 #endif
-#if (defined USE_IN_EP1) && !(defined ENABLE_IN_EP1_ISO)
-	#define USE_IN_EP1_STATUS
+#if (defined USE_EP1_IN) && !(defined ENABLE_EP1_IN_ISO)
+	#define USE_EP1_IN_STATUS
 #endif
-#if (defined USE_IN_EP2) && !(defined ENABLE_IN_EP2_ISO)
-	#define USE_IN_EP2_STATUS
+#if (defined USE_EP2_IN) && !(defined ENABLE_EP2_IN_ISO)
+	#define USE_EP2_IN_STATUS
 #endif
-#if (defined USE_IN_EP3) && !(defined ENABLE_IN_EP3_ISO)
-	#define USE_IN_EP3_STATUS
+#if (defined USE_EP3_IN) && !(defined ENABLE_EP3_IN_ISO)
+	#define USE_EP3_IN_STATUS
 #endif
 
 //-----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ static void Get_Status(void)
 				break;
 
 			case IN_INTERFACE:						// See if recipient was interface						
-				// Only valid if device is configured and existing interface index
+				// Valid if device is configured and existing interface index
 				if ( (USB_State == DEV_CONFIGURED) && (Setup.wIndex.i < DSC_NUM_INTERFACE) )												
 				{
 					// Status packet always returns 0x00
@@ -226,23 +226,23 @@ static void Get_Status(void)
 					aStatus = EP_IDLE;
 					switch ( Setup.wIndex.c[LSB] )
 					{
-#ifdef USE_OUT_EP1_STATUS
-						case OUT_EP1:	aStatus = Ep_StatusOUT1;	setup_handled = TRUE;	break;		
+#ifdef USE_EP1_OUT_STATUS
+						case EP1_OUT:	aStatus = Ep_StatusOUT1;	setup_handled = TRUE;	break;		
 #endif
-#ifdef USE_OUT_EP2_STATUS
-						case OUT_EP2:	aStatus = Ep_StatusOUT2;	setup_handled = TRUE;	break;
+#ifdef USE_EP2_OUT_STATUS
+						case EP2_OUT:	aStatus = Ep_StatusOUT2;	setup_handled = TRUE;	break;
 #endif
-#ifdef USE_OUT_EP3_STATUS
-						case OUT_EP3:	aStatus = Ep_StatusOUT3;	setup_handled = TRUE;	break;
+#ifdef USE_EP3_OUT_STATUS
+						case EP3_OUT:	aStatus = Ep_StatusOUT3;	setup_handled = TRUE;	break;
 #endif
-#ifdef USE_IN_EP1_STATUS
-						case IN_EP1:	aStatus = Ep_StatusIN1;		setup_handled = TRUE;	break;		
+#ifdef USE_EP1_IN_STATUS
+						case EP1_IN:	aStatus = Ep_StatusIN1;		setup_handled = TRUE;	break;		
 #endif
-#ifdef USE_IN_EP2_STATUS
-						case IN_EP2:	aStatus = Ep_StatusIN2;		setup_handled = TRUE;	break;
+#ifdef USE_EP2_IN_STATUS
+						case EP2_IN:	aStatus = Ep_StatusIN2;		setup_handled = TRUE;	break;
 #endif
-#ifdef USE_IN_EP3_STATUS
-						case IN_EP3:	aStatus = Ep_StatusIN3;		setup_handled = TRUE;	break;
+#ifdef USE_EP3_IN_STATUS
+						case EP3_IN:	aStatus = Ep_StatusIN3;		setup_handled = TRUE;	break;
 #endif
 						default:															break;
 					}
@@ -275,7 +275,7 @@ static void Get_Status(void)
 //-----------------------------------------------------------------------------
 //
 // Helper routine to set/reset HALT on the EP
-//	endpoint:	Endopoint address, (OUT_EP1, IN_EP1, etc) defined in USB_Descriptor.h
+//	endpoint:	Endopoint address, (EP1_OUT, EP1_IN, etc) defined in USB_Descriptor.h
 //	status:		EP_IDLE / EP_HALT
 //
 //	Set/Reset HALT flag to the specified EP
@@ -290,23 +290,23 @@ static bit Set_Halt( BYTE endpoint, BYTE status )
 
 	switch ( endpoint ) {
 
-#ifdef USE_OUT_EP1_STATUS
-		case OUT_EP1:	Ep_StatusOUT1 = status;		break;
+#ifdef USE_EP1_OUT_STATUS
+		case EP1_OUT:	Ep_StatusOUT1 = status;		break;
 #endif
-#ifdef USE_OUT_EP2_STATUS
-		case OUT_EP2:	Ep_StatusOUT2 = status;		break;
+#ifdef USE_EP2_OUT_STATUS
+		case EP2_OUT:	Ep_StatusOUT2 = status;		break;
 #endif
-#ifdef USE_OUT_EP3_STATUS
-		case OUT_EP3:	Ep_StatusOUT3 = status;		break;
+#ifdef USE_EP3_OUT_STATUS
+		case EP3_OUT:	Ep_StatusOUT3 = status;		break;
 #endif
-#ifdef USE_IN_EP1_STATUS
-		case IN_EP1:	Ep_StatusIN1  = status;		break;
+#ifdef USE_EP1_IN_STATUS
+		case EP1_IN:	Ep_StatusIN1  = status;		break;
 #endif
-#ifdef USE_IN_EP2_STATUS
-		case IN_EP2:	Ep_StatusIN2  = status;		break;
+#ifdef USE_EP2_IN_STATUS
+		case EP2_IN:	Ep_StatusIN2  = status;		break;
 #endif
-#ifdef USE_IN_EP3_STATUS
-		case IN_EP3:	Ep_StatusIN3  = status;		break;
+#ifdef USE_EP3_IN_STATUS
+		case EP3_IN:	Ep_StatusIN3  = status;		break;
 #endif
 		default:		return FALSE;
 	}
@@ -319,7 +319,7 @@ static bit Set_Halt( BYTE endpoint, BYTE status )
 			controlReg = (rbInCLRDT | rbInSDSTL | rbInFLUSH);	// send STALL
 		POLL_WRITE_BYTE( EINCSRL, controlReg );
 
-#if (defined ENABLE_IN_EP1_DOUBLE_BUF) || (defined ENABLE_IN_EP2_DOUBLE_BUF) || (defined ENABLE_IN_EP3_DOUBLE_BUF)
+#if (defined ENABLE_EP1_IN_DOUBLE_BUF) || (defined ENABLE_EP2_IN_DOUBLE_BUF) || (defined ENABLE_EP3_IN_DOUBLE_BUF)
 		{											// clear double buffer
 			BYTE eincsrl;
 			do {									// wait until FLUSH complete
@@ -338,7 +338,7 @@ static bit Set_Halt( BYTE endpoint, BYTE status )
 			controlReg = (rbOutCLRDT | rbOutSDSTL | rbOutFLUSH);	// send STALL
 		POLL_WRITE_BYTE( EOUTCSRL, controlReg );
 
-#if (defined ENABLE_OUT_EP1_DOUBLE_BUF) || (defined ENABLE_OUT_EP2_DOUBLE_BUF) || (defined ENABLE_OUT_EP3_DOUBLE_BUF)
+#if (defined ENABLE_EP1_OUT_DOUBLE_BUF) || (defined ENABLE_EP2_OUT_DOUBLE_BUF) || (defined ENABLE_EP3_OUT_DOUBLE_BUF)
 		{											// clear double buffer
 			BYTE eoutcsrl;
 			do {									// wait until FLUSH complete
@@ -351,10 +351,18 @@ static bit Set_Halt( BYTE endpoint, BYTE status )
 	}
 													// initialize USB-related variables
 													// because the FIFO is flushed
-	if ( endpoint == IN_EP1 )
-		IN_FIFO_empty   = TRUE;
-	if ( endpoint == OUT_EP1 )
-		OUT_FIFO_loaded = FALSE;
+	if ( endpoint == EP1_IN )
+		IN1_FIFO_empty   = TRUE;
+	if ( endpoint == EP2_IN )
+		IN2_FIFO_empty   = TRUE;
+	if ( endpoint == EP3_IN )
+		IN2_FIFO_empty   = TRUE;
+	if ( endpoint == EP1_OUT )
+		OUT1_FIFO_loaded = FALSE;
+	if ( endpoint == EP2_OUT )
+		OUT2_FIFO_loaded = FALSE;
+	if ( endpoint == EP3_OUT )
+		OUT3_FIFO_loaded = FALSE;
 
 	return TRUE;
 }
@@ -375,7 +383,7 @@ static void Clear_Feature()
 	{
 		switch( Setup.bmRequestType )					
 		{
-			case OUT_DEVICE:						// for device, only remote wakeup is valid
+			case OUT_DEVICE:						// for device, if remote wakeup is valid
 				if (   (Setup.wValue.i == DEVICE_REMOTE_WAKEUP)
 					&& (Setup.wIndex.i == 0) )
 				{
@@ -384,7 +392,7 @@ static void Clear_Feature()
 				}
 				break;
 
-			case OUT_ENDPOINT:						// for endpoint, only endpoint halt is valid
+			case OUT_ENDPOINT:						// for endpoint, if endpoint halt is valid
 				if (   (Setup.wValue.i      == ENDPOINT_HALT)
 					&& (Setup.wIndex.c[MSB] == 0) )
 				{
@@ -415,7 +423,7 @@ static void Set_Feature(void)
 	{
 		switch( Setup.bmRequestType )					
 		{
-			case OUT_DEVICE:						// for device, only remote wakeup is valid
+			case OUT_DEVICE:						// for device, if remote wakeup is valid
 				if (   (Setup.wValue.i == DEVICE_REMOTE_WAKEUP)
 					&& (Setup.wIndex.i == 0) )
 				{
@@ -424,7 +432,7 @@ static void Set_Feature(void)
 				}
 				break;
 
-			case OUT_ENDPOINT:						// for endpoint, only endpoint halt is valid
+			case OUT_ENDPOINT:						// for endpoint, if endpoint halt is valid
 				if (   (Setup.wValue.i      == ENDPOINT_HALT)
 					&& (Setup.wIndex.c[MSB] == 0) )
 				{
@@ -450,8 +458,8 @@ static void Set_Feature(void)
 static void Set_Address(void)
 {
 	if (   (Setup.bmRequestType == OUT_DEVICE)		// Request must be directed to device
-		&& (Setup.wIndex.i == 0)					// with index and length set to zero.
-		&& (Setup.wLength.i == 0)					// wValue holds the address, up to 0x7F
+		&& (Setup.wIndex.i      == 0)				// with index and length set to zero.
+		&& (Setup.wLength.i     == 0)				// wValue holds the address, up to 0x7F
 		&& (Setup.wValue.c[MSB] == 0) && ((Setup.wValue.c[LSB] & 0x80) == 0) )
 	{
 		if (Setup.wValue.c[LSB] != 0)
@@ -527,13 +535,13 @@ static void Get_Descriptor(void)
 	else if ( Setup.bmRequestType == IN_INTERFACE )	// Request to Interface
 	{
 
-		if ( Setup.wIndex.i == DSC_INTERFACE_HID ) {	// HID interface
+		if ( Setup.wIndex.i == DSC_INTERFACE_HID0 ) {	// HID interface 0
 			switch(Setup.wValue.c[MSB])				// Determine which type of descriptor
 			{
 				case DSC_SUBTYPE_CS_HID_CLASS:
 					if ( Setup.wValue.c[LSB] == 0 )
 					{
-						DataPtr = (BYTE*)&(ConfigDescSet.m_HID_class_descriptor);
+						DataPtr = (BYTE*)&(ConfigDescSet.m_HID_class_descriptor_0);
 						DataSize = sizeof( THID_class_descriptor );
 						setup_handled = TRUE;
 					}
@@ -542,8 +550,8 @@ static void Get_Descriptor(void)
 				case DSC_SUBTYPE_CS_HID_REPORT:
 					if ( Setup.wValue.c[LSB] == 0 )
 					{
-						DataPtr = (BYTE*)HID_report_desc;
-						DataSize = HID_report_desc_size;
+						DataPtr = (BYTE*)HID_report_desc0;
+						DataSize = HID_report_desc0_size;
 						setup_handled = TRUE;
 					}
 					break;
@@ -551,15 +559,67 @@ static void Get_Descriptor(void)
 				default:
 					break;
 			}
-
 		}
+
+		else if ( Setup.wIndex.i == DSC_INTERFACE_HID1 ) {	// HID interface 1
+			switch(Setup.wValue.c[MSB])				// Determine which type of descriptor
+			{
+				case DSC_SUBTYPE_CS_HID_CLASS:
+					if ( Setup.wValue.c[LSB] == 0 )
+					{
+						DataPtr = (BYTE*)&(ConfigDescSet.m_HID_class_descriptor_1);
+						DataSize = sizeof( THID_class_descriptor );
+						setup_handled = TRUE;
+					}
+					break;
+
+				case DSC_SUBTYPE_CS_HID_REPORT:
+					if ( Setup.wValue.c[LSB] == 0 )
+					{
+						DataPtr = (BYTE*)HID_report_desc1;
+						DataSize = HID_report_desc1_size;
+						setup_handled = TRUE;
+					}
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		else if ( Setup.wIndex.i == DSC_INTERFACE_HID2 ) {	// HID interface 2
+			switch(Setup.wValue.c[MSB])				// Determine which type of descriptor
+			{
+				case DSC_SUBTYPE_CS_HID_CLASS:
+					if ( Setup.wValue.c[LSB] == 0 )
+					{
+						DataPtr = (BYTE*)&(ConfigDescSet.m_HID_class_descriptor_2);
+						DataSize = sizeof( THID_class_descriptor );
+						setup_handled = TRUE;
+					}
+					break;
+
+				case DSC_SUBTYPE_CS_HID_REPORT:
+					if ( Setup.wValue.c[LSB] == 0 )
+					{
+						DataPtr = (BYTE*)HID_report_desc2;
+						DataSize = HID_report_desc2_size;
+						setup_handled = TRUE;
+					}
+					break;
+
+				default:
+					break;
+			}
+		}
+
 	}
 
 	if ( setup_handled )
 	{
 		Ep_Status0 = EP_TX;							// Put endpoint in transmit mode
 		if ( DataSize > Setup.wLength.i )
-			DataSize = Setup.wLength.i;				// Send only requested amount of data
+			DataSize = Setup.wLength.i;				// Send just requested number of data
 	}
 }
 
@@ -574,12 +634,12 @@ static void Get_Descriptor(void)
 static void Get_Configuration(void)
 {
 	if (   (Setup.bmRequestType == IN_DEVICE)		// This request must be directed to the device
-		&& (Setup.wValue.i == 0)					// with value word set to zero
-		&& (Setup.wIndex.i == 0)					// and index set to zero
+		&& (Setup.wValue.i  == 0)					// with value word set to zero
+		&& (Setup.wIndex.i  == 0)					// and index set to zero
 		&& (Setup.wLength.i == 1) )					// and setup length set to one
 	{
 		if (USB_State == DEV_CONFIGURED)			// If the device is configured, then return value 0x01
-		{											// since this software only supports one configuration
+		{											// since this software supports only one configuration
 			DataPtr = (BYTE*)&ONES_PACKET;
 			setup_handled = TRUE;
 		}
@@ -610,104 +670,104 @@ static void Get_Configuration(void)
 
 // EP1
 
-#if (defined USE_OUT_EP1) && (defined USE_IN_EP1) && ((defined C8051F320_H) || (defined C8051F340_H))
-	#define EP1_CONFIG_SPLIT	rbInSPLIT				// split EP FIFO
+#if (defined USE_EP1_OUT) && (defined USE_EP1_IN) && ((defined C8051F320_H) || (defined C8051F340_H))
+	#define EP1_CONFIG_SPLIT		rbInSPLIT			// split EP FIFO
 #else
-	#define EP1_CONFIG_SPLIT	0
+	#define EP1_CONFIG_SPLIT		0
 #endif
-#if !(defined USE_OUT_EP1) && (defined USE_IN_EP1) && ((defined C8051F320_H) || (defined C8051F340_H))
-	#define EP1_CONFIG_IN		rbInDIRSEL				// set EP to IN
+#if !(defined USE_EP1_OUT) && (defined USE_EP1_IN) && ((defined C8051F320_H) || (defined C8051F340_H))
+	#define EP1_CONFIG_IN			rbInDIRSEL			// set EP to IN
 #else
-	#define EP1_CONFIG_IN		0
+	#define EP1_CONFIG_IN			0
 #endif
-#ifdef ENABLE_IN_EP1_DOUBLE_BUF
+#ifdef ENABLE_EP1_IN_DOUBLE_BUF
 	#define EP1_CONFIG_IN_DBLBUF	rbInDBIEN			// enable double buffer
 #else
 	#define EP1_CONFIG_IN_DBLBUF	0
 #endif
-#ifdef ENABLE_IN_EP1_ISO
-	#define EP1_CONFIG_IN_ISO	rbInISO					// set to isoc
+#ifdef ENABLE_EP1_IN_ISO
+	#define EP1_CONFIG_IN_ISO		rbInISO				// set to isoc
 #else
-	#define EP1_CONFIG_IN_ISO	0
+	#define EP1_CONFIG_IN_ISO		0
 #endif
 
-#ifdef ENABLE_OUT_EP1_DOUBLE_BUF
+#ifdef ENABLE_EP1_OUT_DOUBLE_BUF
 	#define EP1_CONFIG_OUT_DBLBUF	rbOutDBOEN			// enable double buffer
 #else
 	#define EP1_CONFIG_OUT_DBLBUF	0
 #endif
-#ifdef ENABLE_OUT_EP1_ISO
-	#define EP1_CONFIG_OUT_ISO	rbOutISO				// set to isoc
+#ifdef ENABLE_EP1_OUT_ISO
+	#define EP1_CONFIG_OUT_ISO		rbOutISO			// set to isoc
 #else
-	#define EP1_CONFIG_OUT_ISO	0
+	#define EP1_CONFIG_OUT_ISO		0
 #endif
 
 // EP2
 
-#if (defined USE_OUT_EP2) && (defined USE_IN_EP2)
-	#define EP2_CONFIG_SPLIT	rbInSPLIT				// split EP FIFO
+#if (defined USE_EP2_OUT) && (defined USE_EP2_IN)
+	#define EP2_CONFIG_SPLIT		rbInSPLIT			// split EP FIFO
 #else
-	#define EP2_CONFIG_SPLIT	0
+	#define EP2_CONFIG_SPLIT		0
 #endif
-#if !(defined USE_OUT_EP2) && (defined USE_IN_EP2)
-	#define EP2_CONFIG_IN		rbInDIRSEL				// set EP to IN
+#if !(defined USE_EP2_OUT) && (defined USE_EP2_IN)
+	#define EP2_CONFIG_IN			rbInDIRSEL			// set EP to IN
 #else
-	#define EP2_CONFIG_IN		0
+	#define EP2_CONFIG_IN			0
 #endif
-#ifdef ENABLE_IN_EP2_DOUBLE_BUF
+#ifdef ENABLE_EP2_IN_DOUBLE_BUF
 	#define EP2_CONFIG_IN_DBLBUF	rbInDBIEN			// enable double buffer
 #else
 	#define EP2_CONFIG_IN_DBLBUF	0
 #endif
-#ifdef ENABLE_IN_EP2_ISO
-	#define EP2_CONFIG_IN_ISO	rbInISO					// set to isoc
+#ifdef ENABLE_EP2_IN_ISO
+	#define EP2_CONFIG_IN_ISO		rbInISO				// set to isoc
 #else
-	#define EP2_CONFIG_IN_ISO	0
+	#define EP2_CONFIG_IN_ISO		0
 #endif
 
-#ifdef ENABLE_OUT_EP2_DOUBLE_BUF
+#ifdef ENABLE_EP2_OUT_DOUBLE_BUF
 	#define EP2_CONFIG_OUT_DBLBUF	rbOutDBOEN			// enable double buffer
 #else
 	#define EP2_CONFIG_OUT_DBLBUF	0
 #endif
-#ifdef ENABLE_OUT_EP2_ISO
-	#define EP2_CONFIG_OUT_ISO	rbOutISO				// set to isoc
+#ifdef ENABLE_EP2_OUT_ISO
+	#define EP2_CONFIG_OUT_ISO		rbOutISO			// set to isoc
 #else
-	#define EP2_CONFIG_OUT_ISO	0
+	#define EP2_CONFIG_OUT_ISO		0
 #endif
 
 // EP3
 
-#if (defined USE_OUT_EP3) && (defined USE_IN_EP3)
-	#define EP3_CONFIG_SPLIT	rbInSPLIT				// split EP FIFO
+#if (defined USE_EP3_OUT) && (defined USE_EP3_IN)
+	#define EP3_CONFIG_SPLIT		rbInSPLIT			// split EP FIFO
 #else
-	#define EP3_CONFIG_SPLIT	0
+	#define EP3_CONFIG_SPLIT		0
 #endif
-#if !(defined USE_OUT_EP3) && (defined USE_IN_EP3)
-	#define EP3_CONFIG_IN		rbInDIRSEL				// set EP to IN
+#if !(defined USE_EP3_OUT) && (defined USE_EP3_IN)
+	#define EP3_CONFIG_IN			rbInDIRSEL			// set EP to IN
 #else
-	#define EP3_CONFIG_IN		0
+	#define EP3_CONFIG_IN			0
 #endif
-#ifdef ENABLE_IN_EP3_DOUBLE_BUF
+#ifdef ENABLE_EP3_IN_DOUBLE_BUF
 	#define EP3_CONFIG_IN_DBLBUF	rbInDBIEN			// enable double buffer
 #else
 	#define EP3_CONFIG_IN_DBLBUF	0
 #endif
-#ifdef ENABLE_IN_EP3_ISO
-	#define EP3_CONFIG_IN_ISO	rbInISO					// set to isoc
+#ifdef ENABLE_EP3_IN_ISO
+	#define EP3_CONFIG_IN_ISO		rbInISO				// set to isoc
 #else
-	#define EP3_CONFIG_IN_ISO	0
+	#define EP3_CONFIG_IN_ISO		0
 #endif
 
-#ifdef ENABLE_OUT_EP3_DOUBLE_BUF
+#ifdef ENABLE_EP3_OUT_DOUBLE_BUF
 	#define EP3_CONFIG_OUT_DBLBUF	rbOutDBOEN			// enable double buffer
 #else
 	#define EP3_CONFIG_OUT_DBLBUF	0
 #endif
-#ifdef ENABLE_OUT_EP3_ISO
-	#define EP3_CONFIG_OUT_ISO	rbOutISO				// set to isoc
+#ifdef ENABLE_EP3_OUT_ISO
+	#define EP3_CONFIG_OUT_ISO		rbOutISO			// set to isoc
 #else
-	#define EP3_CONFIG_OUT_ISO	0
+	#define EP3_CONFIG_OUT_ISO		0
 #endif
 
 #define EP1_EOUTCSRH	(EP1_CONFIG_OUT_DBLBUF | EP1_CONFIG_OUT_ISO)
@@ -722,7 +782,7 @@ static void Get_Configuration(void)
 static void Set_Configuration(void)
 {
 	if (   (Setup.bmRequestType == OUT_DEVICE)		// This request must be directed to the device
-		&& (Setup.wIndex.i == 0)					// and index set to zero
+		&& (Setup.wIndex.i  == 0)					// and index set to zero
 		&& (Setup.wLength.i == 0) )					// and data length set to one
 	{
 		switch( Setup.wValue.c[LSB] )
@@ -731,22 +791,22 @@ static void Set_Configuration(void)
 				USB_State = DEV_ADDRESS;			// Unconfigures device by setting state to
 													// address, and changing endpoint 1, 2 and 3
 													// status to halt
-#ifdef USE_OUT_EP1_STATUS
+#ifdef USE_EP1_OUT_STATUS
 				Ep_StatusOUT1 = EP_HALT;
 #endif
-#ifdef USE_OUT_EP2_STATUS
+#ifdef USE_EP2_OUT_STATUS
 				Ep_StatusOUT2 = EP_HALT;
 #endif
-#ifdef USE_OUT_EP3_STATUS
+#ifdef USE_EP3_OUT_STATUS
 				Ep_StatusOUT3 = EP_HALT;
 #endif
-#ifdef USE_IN_EP1_STATUS
+#ifdef USE_EP1_IN_STATUS
 				Ep_StatusIN1  = EP_HALT;
 #endif
-#ifdef USE_IN_EP2_STATUS
+#ifdef USE_EP2_IN_STATUS
 				Ep_StatusIN2  = EP_HALT;
 #endif
-#ifdef USE_IN_EP3_STATUS
+#ifdef USE_EP3_IN_STATUS
 				Ep_StatusIN3  = EP_HALT;
 #endif
 				setup_handled = TRUE;
@@ -764,7 +824,7 @@ static void Set_Configuration(void)
 				// Then, data toggle setup and FIFO flush is not handled here in this implementation.
 
 														// configure EPs
-#if (defined USE_OUT_EP1) || (defined USE_IN_EP1)
+#if (defined USE_EP1_OUT) || (defined USE_EP1_IN)
 				POLL_WRITE_BYTE(INDEX, 1);					// select EP1
 	#if (EP1_EINCSRH != 0)
 				POLL_WRITE_BYTE(EINCSRH, EP1_EINCSRH);		// set EINCSRH
@@ -772,9 +832,15 @@ static void Set_Configuration(void)
 	#if (EP1_EOUTCSRH != 0)
 				POLL_WRITE_BYTE(EOUTCSRH, EP1_EOUTCSRH);	// set EOUTCSRH
 	#endif
+	#if defined USE_EP1_OUT
+				POLL_WRITE_BYTE(OUTMAX, EP1_OUT_PACKET_SIZE);	// set max packet size
+	#endif
+	#if defined USE_EP1_IN
+				POLL_WRITE_BYTE(INMAX, EP1_IN_PACKET_SIZE);	// set max packet size
+	#endif	
 #endif
 
-#if (defined USE_OUT_EP2) || (defined USE_IN_EP2)
+#if (defined USE_EP2_OUT) || (defined USE_EP2_IN)
 				POLL_WRITE_BYTE(INDEX, 2);					// select EP2
 	#if (EP2_EINCSRH != 0)
 				POLL_WRITE_BYTE(EINCSRH, EP2_EINCSRH);		// set EINCSRH
@@ -782,9 +848,15 @@ static void Set_Configuration(void)
 	#if (EP2_EOUTCSRH != 0)
 				POLL_WRITE_BYTE(EOUTCSRH, EP2_EOUTCSRH);	// set EOUTCSRH
 	#endif
+	#if defined USE_EP2_OUT
+				POLL_WRITE_BYTE(OUTMAX, EP2_OUT_PACKET_SIZE);	// set max packet size
+	#endif
+	#if defined USE_EP2_IN
+				POLL_WRITE_BYTE(INMAX, EP2_IN_PACKET_SIZE);	// set max packet size
+	#endif	
 #endif
 
-#if (defined USE_OUT_EP3) || (defined USE_IN_EP3)
+#if (defined USE_EP3_OUT) || (defined USE_EP3_IN)
 				POLL_WRITE_BYTE(INDEX, 3);					// select EP3
 	#if (EP3_EINCSRH != 0)
 				POLL_WRITE_BYTE(EINCSRH, EP3_EINCSRH);		// set EINCSRH
@@ -792,29 +864,39 @@ static void Set_Configuration(void)
 	#if (EP3_EOUTCSRH != 0)
 				POLL_WRITE_BYTE(EOUTCSRH, EP3_EOUTCSRH);	// set EOUTCSRH
 	#endif
+	#if defined USE_EP3_OUT
+				POLL_WRITE_BYTE(OUTMAX, EP3_OUT_PACKET_SIZE);	// set max packet size
+	#endif
+	#if defined USE_EP3_IN
+				POLL_WRITE_BYTE(INMAX, EP3_IN_PACKET_SIZE);	// set max packet size
+	#endif	
 #endif
 													// set EP status to IDLE
-#ifdef USE_OUT_EP1_STATUS
+#ifdef USE_EP1_OUT_STATUS
 				Ep_StatusOUT1 = EP_IDLE;
 #endif
-#ifdef USE_OUT_EP2_STATUS
+#ifdef USE_EP2_OUT_STATUS
 				Ep_StatusOUT2 = EP_IDLE;
 #endif
-#ifdef USE_OUT_EP3_STATUS
+#ifdef USE_EP3_OUT_STATUS
 				Ep_StatusOUT3 = EP_IDLE;
 #endif
-#ifdef USE_IN_EP1_STATUS
+#ifdef USE_EP1_IN_STATUS
 				Ep_StatusIN1  = EP_IDLE;
 #endif
-#ifdef USE_IN_EP2_STATUS
+#ifdef USE_EP2_IN_STATUS
 				Ep_StatusIN2  = EP_IDLE;
 #endif
-#ifdef USE_IN_EP3_STATUS
+#ifdef USE_EP3_IN_STATUS
 				Ep_StatusIN3  = EP_IDLE;
 #endif
 													// initialize USB-related variables
-				IN_FIFO_empty   = TRUE;
-				OUT_FIFO_loaded = FALSE;
+				IN1_FIFO_empty   = TRUE;
+				IN2_FIFO_empty   = TRUE;
+				IN3_FIFO_empty   = TRUE;
+				OUT1_FIFO_loaded = FALSE;
+				OUT2_FIFO_loaded = FALSE;
+				OUT3_FIFO_loaded = FALSE;
 
 				setup_handled = TRUE;
 				break;
@@ -837,7 +919,7 @@ static void Get_Interface(void)
 {
 	if (   (USB_State == DEV_CONFIGURED)			// If device is configured
 		&& (Setup.bmRequestType == IN_INTERFACE)	// and recipient is an interface
-		&& (Setup.wValue.i == 0)					// and wValue equals to 0
+		&& (Setup.wValue.i  == 0)					// and wValue equals to 0
 		&& (Setup.wIndex.i < DSC_NUM_INTERFACE)		// and valid interface index
 		&& (Setup.wLength.i == 1) )					// and data length equals to one
 	{

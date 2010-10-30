@@ -38,8 +38,12 @@ extern volatile bit Ep_StatusOUT3;
 extern volatile bit Ep_StatusIN3;
 
 // FIFO status of endpoints
-extern volatile bit IN_FIFO_empty;
-extern volatile bit OUT_FIFO_loaded;
+extern volatile bit IN1_FIFO_empty;
+extern volatile bit IN2_FIFO_empty;
+extern volatile bit IN3_FIFO_empty;
+extern volatile bit OUT1_FIFO_loaded;
+extern volatile bit OUT2_FIFO_loaded;
+extern volatile bit OUT3_FIFO_loaded;
 
 /*
 //

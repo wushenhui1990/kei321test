@@ -6,7 +6,7 @@
 // Includes
 //-----------------------------------------------------------------------------
 
-#include "USB_INT_to_HID_Type.h"
+#include "USB_HID_comp_Type.h"
 #include "USB_Configuration.h"
 #include "USB_Descriptor.h"
 
@@ -49,9 +49,7 @@ Tdevice_descriptor code DeviceDesc =
 // HID report descriptor
 //		placed here because the size of this array is referred in config:HID class desc
 //
-#if 1
-/*
-BYTE code HID_report_desc[] =
+BYTE code HID_report_desc0[] =
 {
 	0x06, 0x00, 0xff,						// USAGE_PAGE (Vendor Defined Page 1)
 	0x09, 0x01,								// USAGE (Vendor Usage 1)
@@ -59,236 +57,50 @@ BYTE code HID_report_desc[] =
 	0x15, 0x00,								//	LOGICAL_MINIMUM (0)
 	0x26, 0xff, 0x00,						//	LOGICAL_MAXIMUM (255)
 	0x75, 0x08,								//	REPORT_SIZE  (8)	- bits
-	0x95, 0x40,								//	REPORT_COUNT (64)	- Bytes
+	0x95, EP1_REPORT_SIZE,					//	REPORT_COUNT (64)	- Bytes
 	0x09, 0x01,								//	USAGE (Vendor Usage 1)
 	0x81, 0x02,								//	INPUT (Data,Var,Abs)
 	0x09, 0x01,								//	USAGE (Vendor Usage 1)
 	0x91, 0x02,								//	OUTPUT (Data,Var,Abs)
 	0xc0									// END_COLLECTION
 };
-*/
 
-	BYTE code HID_report_desc[] =
-	{
-		0x05, 0x0d, 						// USAGE_PAGE (Digitizers)
-		0x09, 0x04, 						// USAGE (Touch Screen)
-		0xa1, 0x01, 						// COLLECTION (Application)
-	
-		0x85, REPORTID_MTOUCH,				   //	REPORT_ID (Touch)
-		0x09, 0x22, 						//	 USAGE (Finger)
-		0xa1, 0x02, 						//	   COLLECTION (Logical)
-		0x09, 0x42, 						//		 USAGE (Tip Switch)
-		0x15, 0x00, 						//		 LOGICAL_MINIMUM (0)
-		0x25, 0x01, 						//		 LOGICAL_MAXIMUM (1)
-		0x75, 0x01, 						//		 REPORT_SIZE (1)
-		0x95, 0x01, 						//		 REPORT_COUNT (1)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-		0x09, 0x32, 						//		 USAGE (In Range)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-	//	  0x09, 0x47,						  //	   USAGE (Touch Valid)
-	//	  0x81, 0x02,						  //	   INPUT (Data,Var,Abs)
-	//	  0x95, 0x05,						  //	   REPORT_COUNT (5)
-		0x95, 0x06, 						//		 REPORT_COUNT (6)
-		0x81, 0x03, 						//		 INPUT (Cnst,Ary,Abs)
-		0x75, 0x08, 						//		 REPORT_SIZE (8)
-		0x09, 0x51, 						//		 USAGE (Contact Identifier)
-		0x95, 0x01, 						//		 REPORT_COUNT (1)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-		0x05, 0x01, 						//		 USAGE_PAGE (Generic Desk..
-		0x26, 0xff, 0x7f,					//		 LOGICAL_MAXIMUM (32767)
-		0x75, 0x10, 						//		 REPORT_SIZE (16)
-		0x55, 0x00, 						//		 UNIT_EXPONENT (0)
-		0x65, 0x00, 						//		 UNIT (None)
-		0x09, 0x30, 						//		 USAGE (X)
-		0x35, 0x00, 						//		 PHYSICAL_MINIMUM (0)
-		0x46, 0x00, 0x00,					//		 PHYSICAL_MAXIMUM (0)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-		0x09, 0x31, 						//		 USAGE (Y)
-		0x46, 0x00, 0x00,					//		 PHYSICAL_MAXIMUM (0)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-		0xc0,								//	  END_COLLECTION
-		0xa1, 0x02, 						//	  COLLECTION (Logical)
-		0x05, 0x0d, 						//	   USAGE_PAGE (Digitizers)
-		0x09, 0x42, 						//		 USAGE (Tip Switch)
-		0x15, 0x00, 						//		 LOGICAL_MINIMUM (0)
-		0x25, 0x01, 						//		 LOGICAL_MAXIMUM (1)
-		0x75, 0x01, 						//		 REPORT_SIZE (1)
-		0x95, 0x01, 						//		 REPORT_COUNT (1)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-		0x09, 0x32, 						//		 USAGE (In Range)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-	//	  0x09, 0x47,						  //	   USAGE (Touch Valid)
-	//	  0x81, 0x02,						  //	   INPUT (Data,Var,Abs)
-	//	  0x95, 0x05,						  //	   REPORT_COUNT (5)
-		0x95, 0x06, 						//		 REPORT_COUNT (6)
-		0x81, 0x03, 						//		 INPUT (Cnst,Ary,Abs)
-		0x75, 0x08, 						//		 REPORT_SIZE (8)
-		0x09, 0x51, 						//		 USAGE ( Cotact Identifier)
-		0x95, 0x01, 						//		 REPORT_COUNT (1)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-		0x05, 0x01, 						//		 USAGE_PAGE (Generic Desk..
-		0x26, 0xff, 0x7f,					//		 LOGICAL_MAXIMUM (32767)
-		0x75, 0x10, 						//		 REPORT_SIZE (16)
-		0x55, 0x00, 						//		 UNIT_EXPONENT (0)
-		0x65, 0x00, 						//		 UNIT (None)
-		0x09, 0x30, 						//		 USAGE (X)
-		0x35, 0x00, 						//		 PHYSICAL_MINIMUM (0)
-		0x46, 0x00, 0x00,					//		 PHYSICAL_MAXIMUM (0)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-		0x09, 0x31, 						//		 USAGE (Y)
-		0x46, 0x00, 0x00,					//		 PHYSICAL_MAXIMUM (0)
-		0x81, 0x02, 						//		 INPUT (Data,Var,Abs)
-		0xc0,								//	  END_COLLECTION
-	
-		0x05, 0x0d, 						//	  USAGE_PAGE (Digitizers)
-		0x09, 0x54, 						//	  USAGE (Contact Count)
-		0x95, 0x01, 						//	  REPORT_COUNT (1)
-		0x75, 0x08, 						//	  REPORT_SIZE (8)
-		0x15, 0x00, 						//	  LOGICAL_MINIMUM (0)
-		0x25, 0x02, 						//	  LOGICAL_MAXIMUM (2)
-		0x81, 0x02, 						//	  INPUT (Data,Var,Abs)
-	//	0x95, 0x76, 						//	  REPORT_COUNT (1)
-	//	0x81, 0x03, 						//		 INPUT (Cnst,Ary,Abs)
-	
-		0x85, REPORTID_FEATURE, 			//	  Feature report ID
-	//	  0x05, 0x0d,						  //	USAGE_PAGE (Digitizers)
-	//	  0x09, 0x54,						  //	USAGE (Contact Count)
-	//	  0x95, 0x01,						  //	REPORT_COUNT (1)
-	//	  0x75, 0x08,						  //	REPORT_SIZE (8)
-	//	  0x15, 0x00,						  //	LOGICAL_MINIMUM (0)
-	//	  0x25, 0x08,						  //	LOGICAL_MAXIMUM (8)
-	//	  0x81, 0x02,						  //	INPUT (Data,Var,Abs)
-		0x09, 0x55, 						//	  USAGE(Contact Count Maximum)
-		0xb1, 0x02, 						//	  FEATURE (Data,Var,Abs)	   
-		0xc0,								// END_COLLECTION
-	};
-
-#else
-BYTE code HID_report_desc[] =
+BYTE code HID_report_desc1[] =
 {
-    0x05, 0x0d,                         // USAGE_PAGE (Digitizers)
-    0x09, 0x04,                         // USAGE (Touch Screen)
-    0xa1, 0x01,                         // COLLECTION (Application)
-
-    0x85, REPORTID_MTOUCH,                 //   REPORT_ID (Touch)
-	0x09, 0x22, 						//	 USAGE (Finger)
-    0xa1, 0x02,                         //     COLLECTION (Logical)
-    0x09, 0x42,                         //       USAGE (Tip Switch)
-    0x15, 0x00,                         //       LOGICAL_MINIMUM (0)
-    0x25, 0x01,                         //       LOGICAL_MAXIMUM (1)
-    0x75, 0x01,                         //       REPORT_SIZE (1)
-    0x95, 0x01,                         //       REPORT_COUNT (1)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-    0x09, 0x32,                         //       USAGE (In Range)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-//    0x09, 0x47,                         //       USAGE (Touch Valid)
-//    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-//    0x95, 0x05,                         //       REPORT_COUNT (5)
-	0x95, 0x06, 						//		 REPORT_COUNT (6)
-    0x81, 0x03,                         //       INPUT (Cnst,Ary,Abs)
-    0x75, 0x08,                         //       REPORT_SIZE (8)
-    0x09, 0x51,                         //       USAGE (Contact Identifier)
-    0x95, 0x01,                         //       REPORT_COUNT (1)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-    0x05, 0x01,                         //       USAGE_PAGE (Generic Desk..
-    0x26, 0xff, 0x7f,                   //       LOGICAL_MAXIMUM (32767)
-    0x75, 0x10,                         //       REPORT_SIZE (16)
-    0x55, 0x00,                         //       UNIT_EXPONENT (0)
-    0x65, 0x00,                         //       UNIT (None)
-    0x09, 0x30,                         //       USAGE (X)
-    0x35, 0x00,                         //       PHYSICAL_MINIMUM (0)
-    0x46, 0x00, 0x00,                   //       PHYSICAL_MAXIMUM (0)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-    0x09, 0x31,                         //       USAGE (Y)
-    0x46, 0x00, 0x00,                   //       PHYSICAL_MAXIMUM (0)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-    0xc0,                               //    END_COLLECTION
-    0xa1, 0x02,                         //    COLLECTION (Logical)
-    0x05, 0x0d,                         //     USAGE_PAGE (Digitizers)
-    0x09, 0x42,                         //       USAGE (Tip Switch)
-    0x15, 0x00,                         //       LOGICAL_MINIMUM (0)
-    0x25, 0x01,                         //       LOGICAL_MAXIMUM (1)
-    0x75, 0x01,                         //       REPORT_SIZE (1)
-    0x95, 0x01,                         //       REPORT_COUNT (1)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-    0x09, 0x32,                         //       USAGE (In Range)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-//    0x09, 0x47,                         //       USAGE (Touch Valid)
-//    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-//    0x95, 0x05,                         //       REPORT_COUNT (5)
-	0x95, 0x06, 						//		 REPORT_COUNT (6)
-    0x81, 0x03,                         //       INPUT (Cnst,Ary,Abs)
-    0x75, 0x08,                         //       REPORT_SIZE (8)
-    0x09, 0x51,                         //       USAGE ( Cotact Identifier)
-    0x95, 0x01,                         //       REPORT_COUNT (1)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-    0x05, 0x01,                         //       USAGE_PAGE (Generic Desk..
-    0x26, 0xff, 0x7f,                   //       LOGICAL_MAXIMUM (32767)
-    0x75, 0x10,                         //       REPORT_SIZE (16)
-    0x55, 0x00,                         //       UNIT_EXPONENT (0)
-    0x65, 0x00,                         //       UNIT (None)
-    0x09, 0x30,                         //       USAGE (X)
-    0x35, 0x00,                         //       PHYSICAL_MINIMUM (0)
-    0x46, 0x00, 0x00,                   //       PHYSICAL_MAXIMUM (0)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-    0x09, 0x31,                         //       USAGE (Y)
-    0x46, 0x00, 0x00,                   //       PHYSICAL_MAXIMUM (0)
-    0x81, 0x02,                         //       INPUT (Data,Var,Abs)
-    0xc0,                               //    END_COLLECTION
-
-	0x05, 0x0d, 						//	  USAGE_PAGE (Digitizers)
-	0x09, 0x54, 						//	  USAGE (Contact Count)
-	0x95, 0x01, 						//	  REPORT_COUNT (1)
-	0x75, 0x08, 						//	  REPORT_SIZE (8)
-	0x15, 0x00, 						//	  LOGICAL_MINIMUM (0)
-	0x25, 0x02, 						//	  LOGICAL_MAXIMUM (2)
-	0x81, 0x02, 						//	  INPUT (Data,Var,Abs)
-//	0x95, 0x76, 						//	  REPORT_COUNT (1)
-//	0x81, 0x03,                         //       INPUT (Cnst,Ary,Abs)
-
-	0x85, REPORTID_FEATURE,				//    Feature report ID
-//    0x05, 0x0d,                         //    USAGE_PAGE (Digitizers)
-//    0x09, 0x54,                         //    USAGE (Contact Count)
-//    0x95, 0x01,                         //    REPORT_COUNT (1)
-//    0x75, 0x08,                         //    REPORT_SIZE (8)
-//    0x15, 0x00,                         //    LOGICAL_MINIMUM (0)
-//    0x25, 0x08,                         //    LOGICAL_MAXIMUM (8)
-//    0x81, 0x02,                         //    INPUT (Data,Var,Abs)
-    0x09, 0x55,                         //    USAGE(Contact Count Maximum)
-    0xb1, 0x02,                         //    FEATURE (Data,Var,Abs)
-   
-    0xc0,                               // END_COLLECTION
-# if 1
-	0x06, 0x00, 0xff,					// USAGE_PAGE (Vendor Defined Page 1)
-    0x09, 0x01,							// USAGE (Vendor Usage 1)
-	0xa1, 0x01,							// COLLECTION (Application)
-	
-    0x85, REPORTID_DEBUGINFO,			// 	   REPORT_ID (Debug info)
-//    0x06, 0x00, 0xff,                   //    USAGE_PAGE (Vendor Defined Page)
-//    0x96, 0x3f, 0x00,					//	  IN_BLINK_SELECTORSize,   //   REPORT_COUNT ()
-    0x96, (REPORT_DEBUG_INFO_LEN&0x00ff), (REPORT_DEBUG_INFO_LEN&0xff00)>>8,					//	  IN_BLINK_SELECTORSize,   //   REPORT_COUNT ()
-    0x75, 0x08,                    		//   REPORT_SIZE (8)
-    0x26, 0xff, 0x00,              		//   LOGICAL_MAXIMUM (255)
-    0x15, 0x00,                    		//   LOGICAL_MINIMUM (0)
-    0x09, 0x01,                    		//   USAGE (Vendor Usage 1)
-    0x81, 0x02,                    		//   INPUT (Data,Var,Abs)
-
-    0x85, REPORTID_CONTROL,        		// Report ID
-//    0x06, 0x00, 0xff,                   //    USAGE_PAGE (Vendor Defined Page)
-    0x95, 0x01,      					//   REPORT_COUNT ()
-    0x75, 0x08,                    		//   REPORT_SIZE (8)
-    0x26, 0xff, 0x00,              		//   LOGICAL_MAXIMUM (255)
-    0x15, 0x00,                    		//   LOGICAL_MINIMUM (0)
-    0x09, 0x01,                    		//   USAGE (Vendor Usage 1)
-    0x91, 0x02,                    		//   OUTPUT (Data,Var,Abs)
-
-	0xc0                                // END_COLLECTION
-#endif
+	0x06, 0x00, 0xff,						// USAGE_PAGE (Vendor Defined Page 1)
+	0x09, 0x01,								// USAGE (Vendor Usage 1)
+	0xa1, 0x01,								// COLLECTION (Application)
+	0x15, 0x00,								//	LOGICAL_MINIMUM (0)
+	0x26, 0xff, 0x00,						//	LOGICAL_MAXIMUM (255)
+	0x75, 0x08,								//	REPORT_SIZE  (8)	- bits
+	0x95, EP2_REPORT_SIZE,					//	REPORT_COUNT (64)	- Bytes
+	0x09, 0x01,								//	USAGE (Vendor Usage 1)
+	0x81, 0x02,								//	INPUT (Data,Var,Abs)
+	0x09, 0x01,								//	USAGE (Vendor Usage 1)
+	0x91, 0x02,								//	OUTPUT (Data,Var,Abs)
+	0xc0									// END_COLLECTION
 };
-#endif
+
+BYTE code HID_report_desc2[] =
+{
+	0x06, 0x00, 0xff,						// USAGE_PAGE (Vendor Defined Page 1)
+	0x09, 0x01,								// USAGE (Vendor Usage 1)
+	0xa1, 0x01,								// COLLECTION (Application)
+	0x15, 0x00,								//	LOGICAL_MINIMUM (0)
+	0x26, 0xff, 0x00,						//	LOGICAL_MAXIMUM (255)
+	0x75, 0x08,								//	REPORT_SIZE  (8)	- bits
+	0x95, EP3_REPORT_SIZE,					//	REPORT_COUNT (64)	- Bytes
+	0x09, 0x01,								//	USAGE (Vendor Usage 1)
+	0x81, 0x02,								//	INPUT (Data,Var,Abs)
+	0x09, 0x01,								//	USAGE (Vendor Usage 1)
+	0x91, 0x02,								//	OUTPUT (Data,Var,Abs)
+	0xc0									// END_COLLECTION
+};
 
 
-BYTE code HID_report_desc_size = sizeof( HID_report_desc );		// export report desc size
+BYTE code HID_report_desc0_size = sizeof( HID_report_desc0 );		// export report desc size
+BYTE code HID_report_desc1_size = sizeof( HID_report_desc1 );		// export report desc size
+BYTE code HID_report_desc2_size = sizeof( HID_report_desc2 );		// export report desc size
 																// Original idea by Patryk
 //
 // Configuration descriptor
@@ -302,13 +114,16 @@ Tconfiguration_desc_set code ConfigDescSet =
 	DSC_NUM_INTERFACE,						// bNumInterfaces
 	0x01,									// bConfigurationValue
 	0x00,									// iConfiguration
-	0x80,									// bmAttributes
-	0x32,									// bMaxPower (100mA)
+	DSC_CNFG_ATR_BASE | DSC_CNFG_ATR_BUS_POWERED,	// bmAttributes
+	DSC_CNFG_MAXPOWER( 100 ),				// bMaxPower (mA)
+											// <= 100mA: Low power
+											// <= 500mA: High power
   },
+								// -----  Interface 0  -----
   {										// Interface descriptor
 	sizeof(Tinterface_descriptor),			// bLength
 	DSC_TYPE_INTERFACE, 					// bDescriptorType
-	DSC_INTERFACE_HID,						// bInterfaceNumber
+	DSC_INTERFACE_HID0,						// bInterfaceNumber
 	0x00,									// bAlternateSetting
 	0x02,									// bNumEndpoints
 	0x03,									// bInterfaceClass (HID)
@@ -323,24 +138,98 @@ Tconfiguration_desc_set code ConfigDescSet =
 	0x00,									// bCountryCode
 	0x01,									// bNumDescriptors
 	DSC_SUBTYPE_CS_HID_REPORT,				// bDescriptorType
-	LE( sizeof( HID_report_desc ) )			// wDescriptorLength
+	LE( sizeof( HID_report_desc0 ) ),		// wDescriptorLength
   },
   {										// Endpoint1 IN descriptor
 	sizeof(Tendpoint_descriptor),			// bLength
 	DSC_TYPE_ENDPOINT,						// bDescriptorType
-	IN_EP1,									// bEndpointAddress
+	EP1_IN,									// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
-	LE( EP1_PACKET_SIZE ), 					// MaxPacketSize
-	2,										// bInterval
+	LE( EP1_IN_PACKET_SIZE ), 				// MaxPacketSize
+	1,										// bInterval
   },
   {										// Endpoint1 OUT descriptor
 	sizeof(Tendpoint_descriptor),			// bLength
 	DSC_TYPE_ENDPOINT,						// bDescriptorType
-	OUT_EP1,								// bEndpointAddress
+	EP1_OUT,								// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
-	LE( EP1_PACKET_SIZE ), 					// MaxPacketSize
-	2										// bInterval
-  }
+	LE( EP1_OUT_PACKET_SIZE ), 				// MaxPacketSize
+	1										// bInterval
+  },
+								// -----  Interface 1  -----
+  {										// Interface descriptor
+	sizeof(Tinterface_descriptor),			// bLength
+	DSC_TYPE_INTERFACE, 					// bDescriptorType
+	DSC_INTERFACE_HID1,						// bInterfaceNumber
+	0x00,									// bAlternateSetting
+	0x02,									// bNumEndpoints
+	0x03,									// bInterfaceClass (HID)
+	0x00,									// bInterfaceSubClass
+	0x00,									// bInterfaceProcotol
+	0x00,									// iInterface
+  },
+  {										// HID class descriptor
+	sizeof(THID_class_descriptor),			// bLength
+	DSC_SUBTYPE_CS_HID_CLASS,				// bDescriptorType
+	LE( 0x0111 ),							// bcdHID (ver1.11)
+	0x00,									// bCountryCode
+	0x01,									// bNumDescriptors
+	DSC_SUBTYPE_CS_HID_REPORT,				// bDescriptorType
+	LE( sizeof( HID_report_desc1 ) ),		// wDescriptorLength
+  },
+  {										// Endpoint1 IN descriptor
+	sizeof(Tendpoint_descriptor),			// bLength
+	DSC_TYPE_ENDPOINT,						// bDescriptorType
+	EP2_IN,									// bEndpointAddress
+	DSC_EP_INTERRUPT,						// bmAttributes
+	LE( EP1_IN_PACKET_SIZE ), 				// MaxPacketSize
+	1,										// bInterval
+  },
+  {										// Endpoint1 OUT descriptor
+	sizeof(Tendpoint_descriptor),			// bLength
+	DSC_TYPE_ENDPOINT,						// bDescriptorType
+	EP2_OUT,								// bEndpointAddress
+	DSC_EP_INTERRUPT,						// bmAttributes
+	LE( EP1_OUT_PACKET_SIZE ), 				// MaxPacketSize
+	1										// bInterval
+  },
+								// -----  Interface 2  -----
+  {										// Interface descriptor
+	sizeof(Tinterface_descriptor),			// bLength
+	DSC_TYPE_INTERFACE, 					// bDescriptorType
+	DSC_INTERFACE_HID2,						// bInterfaceNumber
+	0x00,									// bAlternateSetting
+	0x02,									// bNumEndpoints
+	0x03,									// bInterfaceClass (HID)
+	0x00,									// bInterfaceSubClass
+	0x00,									// bInterfaceProcotol
+	0x00,									// iInterface
+  },
+  {										// HID class descriptor
+	sizeof(THID_class_descriptor),			// bLength
+	DSC_SUBTYPE_CS_HID_CLASS,				// bDescriptorType
+	LE( 0x0111 ),							// bcdHID (ver1.11)
+	0x00,									// bCountryCode
+	0x01,									// bNumDescriptors
+	DSC_SUBTYPE_CS_HID_REPORT,				// bDescriptorType
+	LE( sizeof( HID_report_desc2 ) ),		// wDescriptorLength
+  },
+  {										// Endpoint1 IN descriptor
+	sizeof(Tendpoint_descriptor),			// bLength
+	DSC_TYPE_ENDPOINT,						// bDescriptorType
+	EP3_IN,									// bEndpointAddress
+	DSC_EP_INTERRUPT,						// bmAttributes
+	LE( EP1_IN_PACKET_SIZE ), 				// MaxPacketSize
+	1,										// bInterval
+  },
+  {										// Endpoint1 OUT descriptor
+	sizeof(Tendpoint_descriptor),			// bLength
+	DSC_TYPE_ENDPOINT,						// bDescriptorType
+	EP3_OUT,								// bEndpointAddress
+	DSC_EP_INTERRUPT,						// bmAttributes
+	LE( EP1_OUT_PACKET_SIZE ), 				// MaxPacketSize
+	1										// bInterval
+  },
 }; //end of Configuration
 
 //

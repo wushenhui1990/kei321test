@@ -6,6 +6,14 @@
 #define USB_DESCRIPTORS_H
 
 //-----------------------------------------------------------------------------
+// Definition of report size
+//-----------------------------------------------------------------------------
+
+#define EP1_REPORT_SIZE		0x40
+#define EP2_REPORT_SIZE		0x40
+#define EP3_REPORT_SIZE		0x40
+
+//-----------------------------------------------------------------------------
 // Definition of descriptors
 //-----------------------------------------------------------------------------
 
@@ -13,62 +21,62 @@
 // Standard Device Descriptor Type Defintion
 //------------------------------------------
 typedef struct {
-   BYTE bLength;                       // Size of this Descriptor in Bytes
-   BYTE bDescriptorType;               // Descriptor Type (=1)
-   UINT bcdUSB;                        // USB Spec Release Number in BCD
-   BYTE bDeviceClass;                  // Device Class Code
-   BYTE bDeviceSubClass;               // Device Subclass Code
-   BYTE bDeviceProtocol;               // Device Protocol Code
-   BYTE bMaxPacketSize0;               // Maximum Packet Size for EP0
-   UINT idVendor;                      // Vendor ID
-   UINT idProduct;                     // Product ID
-   UINT bcdDevice;                     // Device Release Number in BCD
-   BYTE iManufacturer;                 // Index of String Desc for Manufacturer
-   BYTE iProduct;                      // Index of String Desc for Product
-   BYTE iSerialNumber;                 // Index of String Desc for SerNo
-   BYTE bNumConfigurations;            // Number of possible Configurations
-} Tdevice_descriptor;                   // End of Device Descriptor Type
+	BYTE bLength;						// Size of this Descriptor in Bytes
+	BYTE bDescriptorType;				// Descriptor Type (=1)
+	UINT bcdUSB;						// USB Spec Release Number in BCD
+	BYTE bDeviceClass;					// Device Class Code
+	BYTE bDeviceSubClass;				// Device Subclass Code
+	BYTE bDeviceProtocol;				// Device Protocol Code
+	BYTE bMaxPacketSize0;				// Maximum Packet Size for EP0
+	UINT idVendor;						// Vendor ID
+	UINT idProduct;						// Product ID
+	UINT bcdDevice;						// Device Release Number in BCD
+	BYTE iManufacturer;					// Index of String Desc for Manufacturer
+	BYTE iProduct;						// Index of String Desc for Product
+	BYTE iSerialNumber;					// Index of String Desc for SerNo
+	BYTE bNumConfigurations;			// Number of possible Configurations
+} Tdevice_descriptor;					// End of Device Descriptor Type
 
 //--------------------------------------------------
 // Standard Configuration Descriptor Type Definition
 //--------------------------------------------------
 typedef struct {
-   BYTE bLength;                       // Size of this Descriptor in Bytes
-   BYTE bDescriptorType;               // Descriptor Type (=2)
-   UINT wTotalLength;                  // Total Length of Data for this Conf
-   BYTE bNumInterfaces;                // # of Interfaces supported by Conf
-   BYTE bConfigurationValue;           // Designator Value for *this* Conf
-   BYTE iConfiguration;                // Index of String Desc for this Conf
-   BYTE bmAttributes;                  // Configuration Characteristics
-   BYTE bMaxPower;                     // Max. Power Consumption in Conf (*2mA)
-} Tconfiguration_descriptor;            // End of Configuration Descriptor Type
+	BYTE bLength;						// Size of this Descriptor in Bytes
+	BYTE bDescriptorType;				// Descriptor Type (=2)
+	UINT wTotalLength;					// Total Length of Data for this Conf
+	BYTE bNumInterfaces;				// number of Interfaces supported by Conf
+	BYTE bConfigurationValue;			// Designator Value for *this* Conf
+	BYTE iConfiguration;				// Index of String Desc for this Conf
+	BYTE bmAttributes;					// Configuration Characteristics
+	BYTE bMaxPower;						// Max. Power Consumption in Conf (*2mA)
+} Tconfiguration_descriptor;			// End of Configuration Descriptor Type
 
 //----------------------------------------------
 // Standard Interface Descriptor Type Definition
 //----------------------------------------------
 typedef struct {
-   BYTE bLength;                       // Size of this Descriptor in Bytes
-   BYTE bDescriptorType;               // Descriptor Type (=4)
-   BYTE bInterfaceNumber;              // Number of *this* Interface (0..)
-   BYTE bAlternateSetting;             // Alternative for this Interface
-   BYTE bNumEndpoints;                 // No of EPs used by this IF (excl. EP0)
-   BYTE bInterfaceClass;               // Interface Class Code
-   BYTE bInterfaceSubClass;            // Interface Subclass Code
-   BYTE bInterfaceProtocol;            // Interface Protocol Code
-   BYTE iInterface;                    // Index of String Desc for Interface
-} Tinterface_descriptor;                // End of Interface Descriptor Type
+	BYTE bLength;						// Size of this Descriptor in Bytes
+	BYTE bDescriptorType;				// Descriptor Type (=4)
+	BYTE bInterfaceNumber;				// Number of *this* Interface (0..)
+	BYTE bAlternateSetting;				// Alternative for this Interface
+	BYTE bNumEndpoints;					// No of EPs used by this IF (excl. EP0)
+	BYTE bInterfaceClass;				// Interface Class Code
+	BYTE bInterfaceSubClass;			// Interface Subclass Code
+	BYTE bInterfaceProtocol;			// Interface Protocol Code
+	BYTE iInterface;					// Index of String Desc for Interface
+} Tinterface_descriptor;				// End of Interface Descriptor Type
 
 //---------------------------------------------
 // Standard Endpoint Descriptor Type Definition
 //---------------------------------------------
 typedef struct {
-   BYTE bLength;                       // Size of this Descriptor in Bytes
-   BYTE bDescriptorType;               // Descriptor Type (=5)
-   BYTE bEndpointAddress;              // Endpoint Address (Number + Direction)
-   BYTE bmAttributes;                  // Endpoint Attributes (Transfer Type)
-   UINT wMaxPacketSize;                // Max. Endpoint Packet Size
-   BYTE bInterval;                     // Polling Interval (Interrupt) ms
-} Tendpoint_descriptor;                 // End of Endpoint Descriptor Type
+	BYTE bLength;						// Size of this Descriptor in Bytes
+	BYTE bDescriptorType;				// Descriptor Type (=5)
+	BYTE bEndpointAddress;				// Endpoint Address (Number + Direction)
+	BYTE bmAttributes;					// Endpoint Attributes (Transfer Type)
+	UINT wMaxPacketSize;				// Max. Endpoint Packet Size
+	BYTE bInterval;						// Polling Interval (Interrupt) ms
+} Tendpoint_descriptor;					// End of Endpoint Descriptor Type
 
 //---------------------------------------------
 // Class specific descriptors for HID
@@ -93,10 +101,18 @@ typedef struct {
 //---------------------------------------------
 typedef struct {
 	Tconfiguration_descriptor				m_config_desc;
-		Tinterface_descriptor				m_interface_desc_0;
-			THID_class_descriptor			m_HID_class_descriptor;	// HID IF
+		Tinterface_descriptor				m_interface_desc_0;			// HID IF 0
+			THID_class_descriptor			m_HID_class_descriptor_0;
 			Tendpoint_descriptor			m_endpoint_desc_IN1;
 			Tendpoint_descriptor			m_endpoint_desc_OUT1;
+		Tinterface_descriptor				m_interface_desc_1;			// HID IF 1
+			THID_class_descriptor			m_HID_class_descriptor_1;
+			Tendpoint_descriptor			m_endpoint_desc_IN2;
+			Tendpoint_descriptor			m_endpoint_desc_OUT2;
+		Tinterface_descriptor				m_interface_desc_2;			// HID IF 2
+			THID_class_descriptor			m_HID_class_descriptor_2;
+			Tendpoint_descriptor			m_endpoint_desc_IN3;
+			Tendpoint_descriptor			m_endpoint_desc_OUT3;
 } Tconfiguration_desc_set;
 
 
@@ -107,6 +123,15 @@ typedef struct {
 #define DSC_TYPE_INTERFACE		0x04
 #define DSC_TYPE_ENDPOINT		0x05
 
+// Configuration descriptor: bmAttributes
+#define DSC_CNFG_ATR_BASE			0x80	// D7: base attribute, always 1
+#define DSC_CNFG_ATR_SELF_POWERED	0x40	// D6: bus-powered: 0, self-powered: 1, both: 1
+#define DSC_CNFG_ATR_BUS_POWERED	0x00
+#define DSC_CNFG_ATR_REMOTEWAKEUP	0x20	// D5: remote-wakeup disabled: 0, enabled: 1
+
+// Configuration descriptor: bMaxPower
+#define DSC_CNFG_MAXPOWER( x )		(((x) + 1) / 2)		// 1 unit = 2mA
+
 // Endpoint transfer type
 #define DSC_EP_CONTROL			0x00
 #define DSC_EP_ISOC				0x01
@@ -114,12 +139,12 @@ typedef struct {
 #define DSC_EP_INTERRUPT		0x03
 
 // Endopoint address
-#define OUT_EP1					0x01
-#define OUT_EP2					0x02
-#define OUT_EP3					0x03
-#define IN_EP1					0x81
-#define IN_EP2					0x82
-#define IN_EP3					0x83
+#define EP1_OUT					0x01
+#define EP2_OUT					0x02
+#define EP3_OUT					0x03
+#define EP1_IN					0x81
+#define EP2_IN					0x82
+#define EP3_IN					0x83
 
 // Descriptor type (Class specific)
 #define DSC_TYPE_CS_INTERFACE		0x24
@@ -129,18 +154,6 @@ typedef struct {
 #define DSC_SUBTYPE_CS_HID_REPORT	0x22
 #define DSC_SUBTYPE_CS_HID_PHYSICAL	0x23
 
-
-
-//------------------------------------------
-// Report ID Definition
-//------------------------------------------
-#define	REPORT_MTOUCH_LEN			13
-#define REPORT_DEBUG_INFO_LEN		63
-
-#define REPORTID_MTOUCH		0x01
-#define REPORTID_DEBUGINFO  0x22
-#define REPORTID_FEATURE	0x33
-#define REPORTID_CONTROL	0x44
 //-----------------------------------------------------------------------------
 // Global variables
 //-----------------------------------------------------------------------------
@@ -150,8 +163,12 @@ extern Tconfiguration_desc_set code ConfigDescSet;
 extern BYTE code * code StringDescTable[];
 extern BYTE code StringDescNum;
 
-extern BYTE code HID_report_desc[];
-extern BYTE code HID_report_desc_size;
+extern BYTE code HID_report_desc0[];
+extern BYTE code HID_report_desc1[];
+extern BYTE code HID_report_desc2[];
+extern BYTE code HID_report_desc0_size;
+extern BYTE code HID_report_desc1_size;
+extern BYTE code HID_report_desc2_size;
 
 #endif	// USB_DESCRIPTORS_H
 
