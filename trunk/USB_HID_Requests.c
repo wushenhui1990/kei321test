@@ -6,13 +6,15 @@
 // Includes
 //-----------------------------------------------------------------------------
 
-#include "USB_INT_to_HID_Type.h"
+#include "USB_HID_comp_Type.h"
 #include "USB_Configuration.h"
+#include "USB_Descriptor.h"
 #include "USB_Standard_Requests.h"
 #include "USB_ISR.h"
 //#include "USB_Main.h"
 #include "USB_HID_Requests.h"
-#include "USB_Descriptor.h"
+#include "USB_HID_Report.h"
+
 //-----------------------------------------------------------------------------
 // Global Variables
 //-----------------------------------------------------------------------------
@@ -50,7 +52,9 @@ static void Set_Protocol( void );
 
 void Class_Request( void )
 {
-	if ( Setup.wIndex.i == DSC_INTERFACE_HID )		// interface index must match to the HID IF
+	if (   (Setup.wIndex.i == DSC_INTERFACE_HID0)		// interface index must match to the HID IF
+		|| (Setup.wIndex.i == DSC_INTERFACE_HID1)
+		|| (Setup.wIndex.i == DSC_INTERFACE_HID2) )
 	{
 		switch( Setup.bRequest )					// dispatch according to the bRequest
 		{
@@ -92,71 +96,6 @@ void Class_Request( void )
 //	Input and feature report are supported
 //
 //-----------------------------------------------------------------------------
-//extern BYTE   idata Out_Packet[ EP1_PACKET_SIZE ];		// Last packet received from host
-BYTE   In_Packet[ EP1_PACKET_SIZE+32 ];		// Next packet to sent to host
-
-
-/*
-#define REPORTID_MTOUCH		0x01
-#define REPORTID_DEBUGINFO  0x22
-#define REPORTID_FEATURE	0x33
-#define REPORTID_CONTROL	0x44
-*/
-
-
-void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)  reentrant
-{
-	unsigned char i;
-	if(report_id==REPORTID_MTOUCH)
-	{
-		In_Packet[0] = REPORTID_MTOUCH;			
-		In_Packet[1] = 'a';		
-		In_Packet[2] = 'a';			
-		In_Packet[3] = 'a';			
-		In_Packet[4] = 'a';	
-
-		rp_buff->rp_buff = &In_Packet[0];
-		rp_buff->rp_len = REPORT_MTOUCH_LEN+1;
-	}
-	else if(report_id==REPORTID_DEBUGINFO)
-	{
-		In_Packet[0] = REPORTID_DEBUGINFO;			
-		In_Packet[1] = 'd';		
-		In_Packet[2] = 'e';			
-		In_Packet[3] = 'b';			
-		In_Packet[4] = 'u';	
-		In_Packet[5] = 'g';		
-	
-		for(i=6;i<=REPORT_DEBUG_INFO_LEN;i++)
-			In_Packet[i] = i;
-			
-		
-		rp_buff->rp_buff = &In_Packet[0];
-		rp_buff->rp_len = REPORT_DEBUG_INFO_LEN+1;
-
-	}
-	else if(report_id==REPORTID_FEATURE)
-	{
-		In_Packet[0] = REPORTID_FEATURE;			
-		In_Packet[1] = 2;		
-			
-		
-		rp_buff->rp_buff = &In_Packet[0];
-		rp_buff->rp_len = 2;
-
-	}
-	else if(report_id==REPORTID_CONTROL)
-	{
-		In_Packet[0] = REPORTID_CONTROL;			
-		In_Packet[1] = 'd';		
-		In_Packet[2] = 'd';			
-		In_Packet[3] = 'd';			
-		In_Packet[4] = 'd';	
-		
-		rp_buff->rp_buff = &In_Packet[0];
-		rp_buff->rp_len = 0;
-	}
-}
 
 static void Get_Report( void )
 {
