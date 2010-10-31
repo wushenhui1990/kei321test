@@ -15,9 +15,6 @@
 //================================================
 
 
-typedef void (*p_ev_handle)(void); 
-
-
 void event_init(void);
 char event_send(u8 ev_id) reentrant;
 void event_process(void) ; 

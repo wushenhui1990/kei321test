@@ -9,9 +9,9 @@ u8 				g_ev_head;
 u8 				g_ev_tail;
 u8 				g_ev_len;
 
-p_ev_handle		g_ev_handler[MAX_EVENT_QUEUE];	
+void (*g_ev_handler[MAX_EVENT_QUEUE])(void);
 //----------------------------------------------------------	
-#define EVENT_DEBUG		1
+#define EVENT_DEBUG		0
 
 
 void ev_default_handler(void)
@@ -49,9 +49,9 @@ char event_send(u8 ev_id) reentrant
 		g_ev_len++;
 		return 1;
 	}
-		
-	//F(("+++ err[%d] [%02d][%02d][%02d]\n",ev_id,g_ev_head,g_ev_tail,g_ev_len));
-
+#if(EVENT_DEBUG==1)		
+	F(("+++ err[%02bx] [%02bx][%02bx][%02bx]\n",ev_id,g_ev_head,g_ev_tail,g_ev_len));
+#endif
 	return	0;
 	
 }
@@ -73,8 +73,9 @@ void event_process(void)
 
 		g_ev_event[g_ev_head]= EVENT_ID_INVALID;		//reset ev
 
-		//F(("---[%bx] [%bx][%bx][%bx]\r\n",ev_id,g_ev_head,g_ev_tail,g_ev_len));
-
+#if(EVENT_DEBUG==1)
+		F(("---[%bx] [%bx][%bx][%bx]\r\n",ev_id,g_ev_head,g_ev_tail,g_ev_len));
+#endif
 		g_ev_head = (g_ev_head+1)% MAX_EVENT_QUEUE;	  //update header and len		
 		g_ev_len--;		
 
@@ -97,12 +98,12 @@ char event_cb_regist(u8 ev_id,void (*pFunc)(void))
 {
 	if(ev_id>= MAX_EVENT_QUEUE)
 	{
-	 	F(("registe invalid id:%x\r\n",ev_id));
+	 	F(("registe invalid id:%bx\r\n",ev_id));
 		return 0;
 	}
 	if(g_ev_handler[ev_id] != ev_default_handler)
 	{
-		F(("has registed id:%x\r\n",ev_id));		
+		F(("has registed id:%bx\r\n",ev_id));		
 		return 0;
 	}
 	g_ev_handler[ev_id] = pFunc;
@@ -113,12 +114,12 @@ char event_cb_unregist(u8 ev_id)
 {
 	if(ev_id>= MAX_EVENT_QUEUE)
 	{
-	 	F(("unregiste invalid id:%x\r\n",ev_id));
+	 	F(("unregiste invalid id:%bx\r\n",ev_id));
 		return 0;
 	}
 	if(g_ev_handler[ev_id] == ev_default_handler)
 	{
-		F(("has no registed:%x\r\n",ev_id));		
+		F(("has no registed:%bx\r\n",ev_id));		
 		return 0;
 	}
 	g_ev_handler[ev_id] = ev_default_handler;

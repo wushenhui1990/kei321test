@@ -11,11 +11,11 @@
 #endif
 
 #ifndef MAX_TIMER_EVENT_QUEUE
-#define MAX_TIMER_EVENT_QUEUE	16
+#define MAX_TIMER_EVENT_QUEUE	8
 #endif
 
 #ifndef MAX_EVENT_QUEUE
-#define MAX_EVENT_QUEUE		16
+#define MAX_EVENT_QUEUE		8
 #endif
 
 
