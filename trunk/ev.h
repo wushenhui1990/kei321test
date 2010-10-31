@@ -20,7 +20,7 @@ typedef void (*p_ev_handle)(void);
 
 void event_init(void);
 char event_send(u8 ev_id) reentrant;
-void event_process(void) reentrant; 
+void event_process(void) ; 
 
 char event_cb_regist(u8 ev_id,void (*pFunc)(void));
 char event_cb_unregist(u8 ev_id);
