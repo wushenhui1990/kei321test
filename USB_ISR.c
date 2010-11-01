@@ -231,8 +231,8 @@ void Usb_ISR(void) interrupt 8			// Top-level USB ISR
 	if (bIn & rbIN2) {			IN2_FIFO_empty = TRUE;	}
 #endif
 #ifdef ENABLE_EP3_IN_INTERRUPT
-//	if (bIn & rbIN3) {			Handle_In3();	}
-	if (bIn & rbIN3) {			IN3_FIFO_empty = TRUE;	}
+	if (bIn & rbIN3) {			Handle_In3();	}
+//	if (bIn & rbIN3) {			IN3_FIFO_empty = TRUE;	}
 #endif
 										// Handle EP0 interrupt
 	if (bIn & rbEP0) {			Handle_Setup();	}
@@ -651,16 +651,16 @@ static void Handle_Out3(void)
 
 #ifdef ENABLE_EP1_IN_INTERRUPT
 
-unsigned char*	g_usb_data_send_buf = NULL;
-unsigned int	g_usb_data_send_transfed = 0;
-unsigned int	g_usb_data_send_residual = 0;
+unsigned char*	g_usb_data_send_buf_ep1 = NULL;
+unsigned int	g_usb_data_send_transfed_ep1 = 0;
+unsigned int	g_usb_data_send_residual_ep1 = 0;
 
 
 static void Handle_In1(void)
 {
 	unsigned char ControlReg;
 
-	if (g_usb_data_send_residual > 0)
+	if (g_usb_data_send_residual_ep1 > 0)
 	{
 		POLL_WRITE_BYTE (INDEX, 1); 		// Set index to endpoint 1 registers
 		// Read contol register for EP 1
@@ -678,19 +678,19 @@ static void Handle_In1(void)
 		}
 
 		// Put new data on Fifo
-		if(g_usb_data_send_residual>EP1_IN_PACKET_SIZE)
+		if(g_usb_data_send_residual_ep1>EP1_IN_PACKET_SIZE)
 		{
-			Fifo_Write(FIFO_EP1, EP1_IN_PACKET_SIZE,(unsigned char *)(g_usb_data_send_buf + g_usb_data_send_transfed));
+			Fifo_Write(FIFO_EP1, EP1_IN_PACKET_SIZE,(unsigned char *)(g_usb_data_send_buf_ep1 + g_usb_data_send_transfed_ep1));
 			POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
-			g_usb_data_send_transfed += EP1_IN_PACKET_SIZE;
-			g_usb_data_send_residual -= EP1_IN_PACKET_SIZE;
+			g_usb_data_send_transfed_ep1 += EP1_IN_PACKET_SIZE;
+			g_usb_data_send_residual_ep1 -= EP1_IN_PACKET_SIZE;
 		}
 		else
 		{
-			Fifo_Write(FIFO_EP1, g_usb_data_send_residual,(unsigned char *)(g_usb_data_send_buf + g_usb_data_send_transfed));
+			Fifo_Write(FIFO_EP1, g_usb_data_send_residual_ep1,(unsigned char *)(g_usb_data_send_buf_ep1 + g_usb_data_send_transfed_ep1));
 			POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
-			g_usb_data_send_transfed += g_usb_data_send_residual;
-			g_usb_data_send_residual = 0;
+			g_usb_data_send_transfed_ep1 += g_usb_data_send_residual_ep1;
+			g_usb_data_send_residual_ep1 = 0;
 		}
 	}
 	else
@@ -725,11 +725,58 @@ static void Handle_In2(void)
 //-----------------------------------------------------------------------------
 
 #ifdef ENABLE_EP3_IN_INTERRUPT
-/*
+
+unsigned char*	g_usb_data_send_buf_ep3 = NULL;
+unsigned int	g_usb_data_send_transfed_ep3 = 0;
+unsigned int	g_usb_data_send_residual_ep3 = 0;
+
+
 static void Handle_In3(void)
 {
+	unsigned char ControlReg;
+
+	if (g_usb_data_send_residual_ep3 > 0)
+	{
+		POLL_WRITE_BYTE (INDEX, 3); 		// Set index to endpoint 1 registers
+		// Read contol register for EP 1
+		POLL_READ_BYTE (EINCSRL, ControlReg);
+		  
+		if (ControlReg & rbInSTSTL) 	 // Clear sent stall if last
+								   // packet returned a stall
+		{
+			POLL_WRITE_BYTE (EINCSRL, rbInCLRDT);
+		}
+
+		if (ControlReg & rbInUNDRUN)	 // Clear underrun bit if it was set
+		{
+			POLL_WRITE_BYTE (EINCSRL, 0x00);
+		}
+
+		// Put new data on Fifo
+		if(g_usb_data_send_residual_ep3>EP3_IN_PACKET_SIZE)
+		{
+			Fifo_Write(FIFO_EP3, EP3_IN_PACKET_SIZE,(unsigned char *)(g_usb_data_send_buf_ep3 + g_usb_data_send_transfed_ep3));
+			POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
+			g_usb_data_send_transfed_ep3 += EP3_IN_PACKET_SIZE;
+			g_usb_data_send_residual_ep3 -= EP3_IN_PACKET_SIZE;
+		}
+		else
+		{
+			Fifo_Write(FIFO_EP3, g_usb_data_send_residual_ep3,(unsigned char *)(g_usb_data_send_buf_ep3 + g_usb_data_send_transfed_ep3));
+			POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
+			g_usb_data_send_transfed_ep3 += g_usb_data_send_residual_ep3;
+			g_usb_data_send_residual_ep3 = 0;
+		}
+	}
+	else
+	{
+		//EP_STATUS[1] = EP_IDLE;
+		Ep_StatusIN3 = EP_IDLE;
+	}
+
+	
 }
-*/
+
 #endif
 
 //-----------------------------------------------------------------------------

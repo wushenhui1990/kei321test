@@ -27,13 +27,16 @@ extern u8 	g_ev_tail;
 extern u8 	g_ev_len;
 
 
-#define	TRIG_TIME	1000
+#define	TRIG_TIME	10
 static void  func_for_debug(void) 
 {
 
 	F(("status:%ld [%02bx][%02bx][%02bx]\n",g_ticks/1000,g_ev_head,g_ev_tail,g_ev_len));
 			
-	send_packet(1);
+	//send_packet(1);
+	//send_packet(0x33);
+	if(g_ticks>5000)
+		send_image_packet();
 
 	return;
 }

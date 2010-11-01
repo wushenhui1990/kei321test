@@ -4,16 +4,13 @@
 #include "USB_HID_Report.h"
 #include "USB_Register.h"
 #include "type.h"
-
+#include "USB_Descriptor.h"
 
 #define REPORT_ID_MTOUCH		0x01
 #define REPORT_ID_FEATURE		0x22
 #define REPORT_ID_DEBUGINFO  	0x33
 
 
-#define EP1_REPORT_SIZE		0x40
-#define EP2_REPORT_SIZE		0x40
-#define EP3_REPORT_SIZE		0x40
 
 BYTE xdata InOut_Packet1[ EP1_REPORT_SIZE ];	// Last packet received from host
 BYTE xdata InOut_Packet2[ EP2_REPORT_SIZE ];	// Last packet received from host
@@ -40,10 +37,14 @@ BYTE xdata InOut_Packet3[ EP3_REPORT_SIZE ];	// Last packet received from host
 #endif
 
 
-extern unsigned char*	g_usb_data_send_buf ;
-extern unsigned int	g_usb_data_send_transfed ;
-extern unsigned int	g_usb_data_send_residual ;
+extern unsigned char*	g_usb_data_send_buf_ep1 ;
+extern unsigned int	g_usb_data_send_transfed_ep1 ;
+extern unsigned int	g_usb_data_send_residual_ep1 ;
 
+
+extern unsigned char*	g_usb_data_send_buf_ep3 ;
+extern unsigned int	g_usb_data_send_transfed_ep3 ;
+extern unsigned int	g_usb_data_send_residual_ep3 ;
 
 void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)  reentrant
 {
@@ -59,7 +60,7 @@ void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)  reentrant
 		InOut_Packet1[4] = 'a';	
 
 		rp_buff->rp_buff = &InOut_Packet1[0];
-		rp_buff->rp_len = EP1_REPORT_SIZE+1;
+		rp_buff->rp_len = EP1_REPORT_SIZE;
 	}
 	else if(report_id==REPORT_ID_FEATURE)
 	{
@@ -67,23 +68,24 @@ void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)  reentrant
 			
 		
 		rp_buff->rp_buff = &InOut_Packet2[0];
-		rp_buff->rp_len = EP1_REPORT_SIZE+1;
+		rp_buff->rp_len = EP1_REPORT_SIZE;
 
 	}
 	else if(report_id==REPORT_ID_DEBUGINFO)
 	{
+		InOut_Packet3[0] = report_id;			
 		InOut_Packet3[1] = 'd';		
 		InOut_Packet3[2] = 'e';			
 		InOut_Packet3[3] = 'b';			
 		InOut_Packet3[4] = 'u';	
 		InOut_Packet3[5] = 'g';		
 	
-		for(i=6;i<=EP3_REPORT_SIZE;i++)
+		for(i=6;i<EP3_REPORT_SIZE;i++)
 			InOut_Packet3[i] = i;
 			
 		
 		rp_buff->rp_buff = &InOut_Packet3[0];
-		rp_buff->rp_len = EP3_REPORT_SIZE+1;
+		rp_buff->rp_len = EP3_REPORT_SIZE;
 
 	}
 }
@@ -119,73 +121,79 @@ void fifo_write(u8 addr, u8 uNumBytes, u8 * pData)
 	}
 }
 
+void send_mtouch_packet (void)
+	{
+		bit EAState;
+		rp_buff_st		rp_buff;
+	
+		EAState = EA;
+		EA = 0;
 
-void send_packet (unsigned char ReportID)
+			if((Ep_StatusIN1==EP_IDLE))
+			{
+				if(0==g_usb_data_send_residual_ep1)
+				{					
+					fill_report_packet( REPORT_ID_MTOUCH ,&rp_buff);
+					g_usb_data_send_buf_ep1 = rp_buff.rp_buff;
+					g_usb_data_send_residual_ep1 = rp_buff.rp_len;
+					g_usb_data_send_transfed_ep1 = 0;
+				}
+				POLL_WRITE_BYTE (INDEX, 1); 		// Set index to endpoint 1 registers Put new data on Fifo
+				if(g_usb_data_send_residual_ep1>EP1_IN_PACKET_SIZE)
+				{
+					fifo_write(FIFO_EP1, EP1_IN_PACKET_SIZE,(unsigned char *)(g_usb_data_send_buf_ep1 + g_usb_data_send_transfed_ep1));
+					POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
+					g_usb_data_send_transfed_ep1 += EP1_IN_PACKET_SIZE;
+					g_usb_data_send_residual_ep1 -= EP1_IN_PACKET_SIZE;
+				}
+				else
+				{
+					fifo_write (FIFO_EP1, g_usb_data_send_residual_ep1,(unsigned char *)(g_usb_data_send_buf_ep1+g_usb_data_send_transfed_ep1));
+					POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
+					g_usb_data_send_transfed_ep1 += g_usb_data_send_residual_ep1;
+					g_usb_data_send_residual_ep1 = 0;
+				}
+			}									
+
+		EA = EAState;
+	}
+	
+void send_image_packet (void)
 {
 	bit EAState;
-//	unsigned char   ControlReg;
 	rp_buff_st		rp_buff;
-	//   volatile unsigned char i =0;
 
 	EAState = EA;
 	EA = 0;
 
-//	POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
-
-	// Read contol register for EP 1
-//	POLL_READ_BYTE (EINCSRL, ControlReg);
-
-	//if (Ep_StatusIN1== EP_HALT)        // If endpoint is currently halted,
-	//                               // send a stall
-	//{
-	//	POLL_WRITE_BYTE (EINCSRL, rbInSDSTL);
-//	}
-
-//	else if(Ep_StatusIN1== EP_IDLE)
-//	if((Ep_StatusIN1!=EP_HALT) && _testbit_( IN_FIFO_empty ))
-	if((Ep_StatusIN1==EP_IDLE))
+	if((Ep_StatusIN3==EP_IDLE))
 	{
-		//Ep_StatusIN1 = EP_TX;			// the state will be updated inside the ISR handler
-
-		//if (ControlReg & rbInSTSTL)      // Clear sent stall if last packet returned a stall
-		//{
-		//	POLL_WRITE_BYTE (EINCSRL, rbInCLRDT);
-		//}
-
-	//	if (ControlReg & rbInUNDRUN)     // Clear underrun bit if it was set
-	//	{
-	//		POLL_WRITE_BYTE (EINCSRL, 0x00);
-	//	}
 		
-		if(0==g_usb_data_send_residual)
+		if(0==g_usb_data_send_residual_ep3)
 		{
-			//ReportHandler_IN_Foreground (ReportID);
-			
-			fill_report_packet( ReportID ,&rp_buff);
-			g_usb_data_send_buf = rp_buff.rp_buff;
-			g_usb_data_send_residual = rp_buff.rp_len;
-			g_usb_data_send_transfed = 0;
+			fill_report_packet( REPORT_ID_DEBUGINFO,&rp_buff);
+			g_usb_data_send_buf_ep3 = rp_buff.rp_buff;
+			g_usb_data_send_residual_ep3 = rp_buff.rp_len;
+			g_usb_data_send_transfed_ep3 = 0;
 		}
 #if 1
-		POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
-		// Put new data on Fifo
-		if(g_usb_data_send_residual>EP1_IN_PACKET_SIZE)
+		POLL_WRITE_BYTE (INDEX, 3);         // Set index to endpoint 1 registers Put new data on Fifo
+		if(g_usb_data_send_residual_ep3>EP3_IN_PACKET_SIZE)
 		{
-			fifo_write(FIFO_EP1, EP1_IN_PACKET_SIZE,(unsigned char *)(g_usb_data_send_buf + g_usb_data_send_transfed));
+			fifo_write(FIFO_EP3, EP3_IN_PACKET_SIZE,(unsigned char *)(g_usb_data_send_buf_ep3 + g_usb_data_send_transfed_ep3));
 			POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
-			g_usb_data_send_transfed += EP1_IN_PACKET_SIZE;
-			g_usb_data_send_residual -= EP1_IN_PACKET_SIZE;
+			g_usb_data_send_transfed_ep3 += EP3_IN_PACKET_SIZE;
+			g_usb_data_send_residual_ep3 -= EP3_IN_PACKET_SIZE;
 		}
 		else
 		{
-			fifo_write (FIFO_EP1, g_usb_data_send_residual,(unsigned char *)(g_usb_data_send_buf+g_usb_data_send_transfed));
+			fifo_write (FIFO_EP3, g_usb_data_send_residual_ep3,(unsigned char *)(g_usb_data_send_buf_ep3+g_usb_data_send_transfed_ep3));
 			POLL_WRITE_BYTE (EINCSRL, rbInINPRDY);
-			g_usb_data_send_transfed += g_usb_data_send_residual;
-		  	g_usb_data_send_residual = 0;
+			g_usb_data_send_transfed_ep3 += g_usb_data_send_residual_ep3;
+		  	g_usb_data_send_residual_ep3 = 0;
 		}
 #endif
-		//F(("in rpt!!\n"));
-	}                                   // indicating fresh data on FIFO 1
+	}                        
 
 	EA = EAState;
 }
