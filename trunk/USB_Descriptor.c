@@ -182,7 +182,7 @@ Tconfiguration_desc_set code ConfigDescSet =
 	DSC_TYPE_ENDPOINT,						// bDescriptorType
 	EP2_IN,									// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
-	LE( EP1_IN_PACKET_SIZE ), 				// MaxPacketSize
+	LE( EP2_IN_PACKET_SIZE ), 				// MaxPacketSize
 	1,										// bInterval
   },
   {										// Endpoint1 OUT descriptor
@@ -190,7 +190,7 @@ Tconfiguration_desc_set code ConfigDescSet =
 	DSC_TYPE_ENDPOINT,						// bDescriptorType
 	EP2_OUT,								// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
-	LE( EP1_OUT_PACKET_SIZE ), 				// MaxPacketSize
+	LE( EP2_OUT_PACKET_SIZE ), 				// MaxPacketSize
 	1										// bInterval
   },
 								// -----  Interface 2  -----
@@ -219,7 +219,7 @@ Tconfiguration_desc_set code ConfigDescSet =
 	DSC_TYPE_ENDPOINT,						// bDescriptorType
 	EP3_IN,									// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
-	LE( EP1_IN_PACKET_SIZE ), 				// MaxPacketSize
+	LE( EP3_IN_PACKET_SIZE ), 				// MaxPacketSize
 	1,										// bInterval
   },
   {										// Endpoint1 OUT descriptor
@@ -227,7 +227,7 @@ Tconfiguration_desc_set code ConfigDescSet =
 	DSC_TYPE_ENDPOINT,						// bDescriptorType
 	EP3_OUT,								// bEndpointAddress
 	DSC_EP_INTERRUPT,						// bmAttributes
-	LE( EP1_OUT_PACKET_SIZE ), 				// MaxPacketSize
+	LE( EP3_OUT_PACKET_SIZE ), 				// MaxPacketSize
 	1										// bInterval
   },
 }; //end of Configuration
