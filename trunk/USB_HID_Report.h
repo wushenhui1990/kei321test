@@ -9,6 +9,6 @@ typedef struct report_buff_st
 
 
 void fill_report_packet( unsigned char report_id ,rp_buff_st*rp_buff)  reentrant;
-void send_packet (unsigned char ReportID);
-
+void send_mtouch_packet (void);
+void send_image_packet (void);
 #endif
