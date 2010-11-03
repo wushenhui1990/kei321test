@@ -59,70 +59,6 @@ code const device_descriptor DEVICEDESC =
    0x01                                // bNumConfigurations
 }; //end of DEVICEDESC
 
-// From "USB Device Class Definition for Human Interface Devices (HID)".
-// Section 7.1:
-// "When a Get_Descriptor(Configuration) request is issued,
-// it returns the Configuration descriptor, all Interface descriptors,
-// all Endpoint descriptors, and the HID descriptor for each interface."
-code const hid_configuration_descriptor HIDCONFIGDESC =
-{
-
-{ // configuration_descriptor hid_configuration_descriptor
-   0x09,                               // Length
-   0x02,                               // Type
-   0x2900,                             // Totallength (= 9+9+9+7+7)
-   0x01,                               // NumInterfaces
-   0x01,                               // bConfigurationValue
-   0x00,                               // iConfiguration
-   0x80,                               // bmAttributes
-   0x20                                // MaxPower (in 2mA units)
-},
-
-{ // interface_descriptor hid_interface_descriptor
-   0x09,                               // bLength
-   0x04,                               // bDescriptorType
-   0x00,                               // bInterfaceNumber
-   0x00,                               // bAlternateSetting
-   0x02,                               // bNumEndpoints
-   0x03,                               // bInterfaceClass (3 = HID)
-   0x00,                               // bInterfaceSubClass
-   0x00,                               // bInterfaceProcotol
-   0x00                                // iInterface
-},
-
-{ // class_descriptor hid_descriptor
-   0x09,	                           // bLength
-   0x21,	                           // bDescriptorType
-   0x0101,	                           // bcdHID
-   0x00,	                           // bCountryCode
-   0x02,	                           // bNumDescriptors
-   0x22,                               // bDescriptorType
-   LE(HID_REPORT_DESCRIPTOR_SIZE)       // wItemLength (tot. len. of report
-                                       // descriptor)
-},
-
-// IN endpoint (mandatory for HID)
-{ // endpoint_descriptor hid_endpoint_in_descriptor
-   0x07,                               // bLength
-   0x05,                               // bDescriptorType
-   0x81,                               // bEndpointAddress
-   0x03,                               // bmAttributes
-   LE(EP1_PACKET_SIZE),                 // MaxPacketSize (LITTLE ENDIAN)
-   10                                  // bInterval
-},
-
-// OUT endpoint (optional for HID)
-{ // endpoint_descriptor hid_endpoint_out_descriptor
-   0x07,                               // bLength
-   0x05,                               // bDescriptorType
-   0x01,                               // bEndpointAddress
-   0x03,                               // bmAttributes
-   LE(EP2_PACKET_SIZE),                 // MaxPacketSize (LITTLE ENDIAN)
-   10                                  // bInterval
-}
-
-};
-
 unsigned char code HID_report_desc[] =
 //code const hid_report_descriptor HIDREPORTDESC =
 {
@@ -182,6 +118,71 @@ unsigned char code HID_report_desc[] =
     0xC0                           //   end Application Collection
 };
 unsigned char code HID_report_desc_size = sizeof( HID_report_desc );		// export report desc size
+
+// From "USB Device Class Definition for Human Interface Devices (HID)".
+// Section 7.1:
+// "When a Get_Descriptor(Configuration) request is issued,
+// it returns the Configuration descriptor, all Interface descriptors,
+// all Endpoint descriptors, and the HID descriptor for each interface."
+code const hid_configuration_descriptor HIDCONFIGDESC =
+{
+
+{ // configuration_descriptor hid_configuration_descriptor
+   0x09,                               // Length
+   0x02,                               // Type
+   0x2900,                             // Totallength (= 9+9+9+7+7)
+   0x01,                               // NumInterfaces
+   0x01,                               // bConfigurationValue
+   0x00,                               // iConfiguration
+   0x80,                               // bmAttributes
+   0x20                                // MaxPower (in 2mA units)
+},
+
+{ // interface_descriptor hid_interface_descriptor
+   0x09,                               // bLength
+   0x04,                               // bDescriptorType
+   0x00,                               // bInterfaceNumber
+   0x00,                               // bAlternateSetting
+   0x02,                               // bNumEndpoints
+   0x03,                               // bInterfaceClass (3 = HID)
+   0x00,                               // bInterfaceSubClass
+   0x00,                               // bInterfaceProcotol
+   0x00                                // iInterface
+},
+
+{ // class_descriptor hid_descriptor
+   0x09,	                           // bLength
+   0x21,	                           // bDescriptorType
+   0x0101,	                           // bcdHID
+   0x00,	                           // bCountryCode
+   0x02,	                           // bNumDescriptors
+   0x22,                               // bDescriptorType
+   LE(sizeof( HID_report_desc ))       // wItemLength (tot. len. of report
+                                       // descriptor)
+},
+
+// IN endpoint (mandatory for HID)
+{ // endpoint_descriptor hid_endpoint_in_descriptor
+   0x07,                               // bLength
+   0x05,                               // bDescriptorType
+   0x81,                               // bEndpointAddress
+   0x03,                               // bmAttributes
+   LE(EP1_IN_PACKET_SIZE),                 // MaxPacketSize (LITTLE ENDIAN)
+   1                                  // bInterval
+},
+
+// OUT endpoint (optional for HID)
+{ // endpoint_descriptor hid_endpoint_out_descriptor
+   0x07,                               // bLength
+   0x05,                               // bDescriptorType
+   0x01,                               // bEndpointAddress
+   0x03,                               // bmAttributes
+   LE(EP1_OUT_PACKET_SIZE),                 // MaxPacketSize (LITTLE ENDIAN)
+   1                                  // bInterval
+}
+
+};
+
 
 #define STR0LEN 4
 
