@@ -91,7 +91,7 @@ void main(void)
 	timer_event_init();
 
 //-----------------------------------------add a timer eve
-#if 1
+#if 0
 	unit.event = EVENT_ID_TIMER_DEBUG;
 	unit.time = TRIG_TIME;
 	unit.callback = func_for_debug;

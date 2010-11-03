@@ -36,6 +36,7 @@
 #include "F3xx_Blink_Control.h"
 #include "F3xx_USB0_InterruptServiceRoutine.h"
 #include "F3xx_USB0_Register.h"
+#include "F3xx_USB0_ReportHandler.h"
 #if 0
 //-----------------------------------------------------------------------------
 // Definitions
@@ -101,10 +102,10 @@ void Blink_Update(void);
 // Global Variables
 // ----------------------------------------------------------------------------
 // Last packet received from host
-unsigned char xdata OUT_PACKET[16];// = {0,0,0,0,0,0,0,0,0};
+unsigned char xdata OUT_PACKET[OUT_PACKET_LEN];// = {0,0,0,0,0,0,0,0,0};
 
 // Next packet to send to host
-unsigned char xdata IN_PACKET[64];//  = {0,0,0};
+unsigned char xdata IN_PACKET[IN_PACKET_LEN];//  = {0,0,0};
 
 //-----------------------------------------------------------------------------
 // Interrupt Service Routines

@@ -31,6 +31,8 @@
 #ifndef  _UUSB_REPORTHANDLER_H_
 #define  _USB_REPORTHANDLER_H_
 
+#define  OUT_PACKET_LEN		16
+#define  IN_PACKET_LEN		64
 
 typedef struct {
    unsigned char ReportID;

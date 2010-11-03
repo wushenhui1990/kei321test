@@ -35,7 +35,7 @@
 #include "F3xx_USB0_ReportHandler.h"
 #include "F3xx_USB0_InterruptServiceRoutine.h"
 #include "F3xx_Blink_Control.h"
-
+#include "uart.h"
 
 // ----------------------------------------------------------------------------
 // Local Function Prototypes
@@ -90,7 +90,7 @@ const VectorTableEntry OUT_VECTORTABLE[OUT_VECTORTABLESize] =
 {
    // FORMAT: Report ID, Report Handler
    OUT_BLINK_ENABLEID, OUT_BLINK_ENABLE,
-   OUT_BLINK_PATTERNID, OUT_BLINK_PATTERN,
+   CMD_ID_CONFIG_SENSOR, OUT_BLINK_PATTERN,
    OUT_BLINK_RATEID, OUT_BLINK_RATE,
    FEATURE_BLINK_DIMMERID, FEATURE_BLINK_DIMMER_OUTPUT
 
@@ -201,12 +201,14 @@ void OUT_BLINK_ENABLE(void)
 //-----------------------------------------------------------------------------
 void OUT_BLINK_PATTERN(void)
 {
+/*
    unsigned char i;
    for(i = 1; i < 9; i++)
    {
       BLINK_PATTERN[i-1] = OUT_BUFFER.Ptr[i];
    }
-
+*/
+	F(("cmd: CMD_ID_CONFIG_SENSOR\n"));
 }
 
 // ----------------------------------------------------------------------------
@@ -268,7 +270,7 @@ void FEATURE_BLINK_DIMMER_INPUT (void)
 void Setup_OUT_BUFFER(void)
 {
    OUT_BUFFER.Ptr = OUT_PACKET;
-   OUT_BUFFER.Length = 10;
+   OUT_BUFFER.Length = OUT_PACKET_LEN;
 }
 
 // ----------------------------------------------------------------------------
