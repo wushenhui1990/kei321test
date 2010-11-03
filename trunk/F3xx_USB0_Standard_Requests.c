@@ -46,7 +46,9 @@ extern unsigned char* STRINGDESCTABLE[];
 
 // Additional declarations for HID:
 extern hid_configuration_descriptor HIDCONFIGDESC;
-extern hid_report_descriptor code HIDREPORTDESC;
+//extern hid_report_descriptor code HIDREPORTDESC;
+extern unsigned char code HID_report_desc[] ;
+extern unsigned char code HID_report_desc_size; 
 
 extern setup_buffer SETUP;             // Buffer for current device request
                                        // information
@@ -404,8 +406,10 @@ void Get_Descriptor (void)             // This routine sets the data pointer
       break;
 
    case DSC_HID_REPORT:                // HID Specific (HID report descriptor)
-      DATAPTR = (unsigned char*)&HIDREPORTDESC;
-      DATASIZE = HID_REPORT_DESCRIPTOR_SIZE;
+      //DATAPTR = (unsigned char*)&HIDREPORTDESC;
+      //DATASIZE = HID_REPORT_DESCRIPTOR_SIZE;
+	  DATAPTR = (unsigned char*)HID_report_desc;
+	  DATASIZE = HID_report_desc_size;
       break;
 
       default:

@@ -39,6 +39,8 @@
 // Descriptor Declarations
 //-----------------------------------------------------------------------------
 
+#define LE(x)	((((x)&0x00FF)<<8)|(((x)&0xFF00)>>8))	// convert to little endian
+
 code const device_descriptor DEVICEDESC =
 {
    18,                                 // bLength
@@ -95,7 +97,7 @@ code const hid_configuration_descriptor HIDCONFIGDESC =
    0x00,	                           // bCountryCode
    0x02,	                           // bNumDescriptors
    0x22,                               // bDescriptorType
-   HID_REPORT_DESCRIPTOR_SIZE_LE       // wItemLength (tot. len. of report
+   LE(HID_REPORT_DESCRIPTOR_SIZE)       // wItemLength (tot. len. of report
                                        // descriptor)
 },
 
@@ -105,7 +107,7 @@ code const hid_configuration_descriptor HIDCONFIGDESC =
    0x05,                               // bDescriptorType
    0x81,                               // bEndpointAddress
    0x03,                               // bmAttributes
-   EP1_PACKET_SIZE_LE,                 // MaxPacketSize (LITTLE ENDIAN)
+   LE(EP1_PACKET_SIZE),                 // MaxPacketSize (LITTLE ENDIAN)
    10                                  // bInterval
 },
 
@@ -115,13 +117,14 @@ code const hid_configuration_descriptor HIDCONFIGDESC =
    0x05,                               // bDescriptorType
    0x01,                               // bEndpointAddress
    0x03,                               // bmAttributes
-   EP2_PACKET_SIZE_LE,                 // MaxPacketSize (LITTLE ENDIAN)
+   LE(EP2_PACKET_SIZE),                 // MaxPacketSize (LITTLE ENDIAN)
    10                                  // bInterval
 }
 
 };
 
-code const hid_report_descriptor HIDREPORTDESC =
+unsigned char code HID_report_desc[] =
+//code const hid_report_descriptor HIDREPORTDESC =
 {
     0x06, 0x00, 0xff,              // USAGE_PAGE (Vendor Defined Page 1)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
@@ -178,6 +181,7 @@ code const hid_report_descriptor HIDREPORTDESC =
 
     0xC0                           //   end Application Collection
 };
+unsigned char code HID_report_desc_size = sizeof( HID_report_desc );		// export report desc size
 
 #define STR0LEN 4
 

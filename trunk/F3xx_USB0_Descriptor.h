@@ -147,11 +147,11 @@ typedef code struct {
 hid_configuration_descriptor;
 
 #define HID_REPORT_DESCRIPTOR_SIZE 0x0062
-#define HID_REPORT_DESCRIPTOR_SIZE_LE 0x6200
+//#define HID_REPORT_DESCRIPTOR_SIZE_LE 0x6200
 
 
 
-typedef code unsigned char hid_report_descriptor[HID_REPORT_DESCRIPTOR_SIZE];
+//typedef code unsigned char hid_report_descriptor[HID_REPORT_DESCRIPTOR_SIZE];
 
 //-----------------------------
 // SETUP Packet Type Definition
