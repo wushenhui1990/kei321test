@@ -53,7 +53,7 @@ void Usb_Init(void);
 // ----------------------------------------------------------------------------
 // Report IDs
 // ----------------------------------------------------------------------------
-#define OUT_BLINK_PATTERNID     0x01
+#define CMD_ID_CONFIG_SENSOR     0x01
 #define OUT_BLINK_ENABLEID      0x02
 #define OUT_BLINK_RATEID        0x03
 #define IN_BLINK_SELECTORID     0x04
@@ -63,7 +63,7 @@ void Usb_Init(void);
 // ----------------------------------------------------------------------------
 // Report Sizes (in bytes)
 // ----------------------------------------------------------------------------
-#define OUT_BLINK_PATTERNSize    0x08
+#define CMD_LEN_CONFIG_SENSOR    0x08
 #define OUT_BLINK_ENABLESize     0x01
 #define OUT_BLINK_RATESize       0x02
 #define IN_BLINK_SELECTORSize    0x3f

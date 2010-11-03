@@ -66,8 +66,8 @@ unsigned char code HID_report_desc[] =
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
     0xa1, 0x01,                    // COLLECTION (Application)
 
-    0x85, OUT_BLINK_PATTERNID,       // Report ID
-    0x95, OUT_BLINK_PATTERNSize,   //   REPORT_COUNT ()
+    0x85, CMD_ID_CONFIG_SENSOR,       // Report ID
+    0x95, CMD_LEN_CONFIG_SENSOR,   //   REPORT_COUNT ()
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
