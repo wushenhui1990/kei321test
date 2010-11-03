@@ -66,7 +66,7 @@ void Usb_Init(void);
 #define OUT_BLINK_PATTERNSize    0x08
 #define OUT_BLINK_ENABLESize     0x01
 #define OUT_BLINK_RATESize       0x02
-#define IN_BLINK_SELECTORSize    0x01
+#define IN_BLINK_SELECTORSize    0x3f
 #define IN_BLINK_STATSSIZE       0x02
 #define FEATURE_BLINK_DIMMERSIZE 0x01
 

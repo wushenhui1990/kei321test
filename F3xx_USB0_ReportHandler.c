@@ -142,9 +142,13 @@ BufferStructure IN_BUFFER, OUT_BUFFER;
 // blink pattern from the host application.
 //-----------------------------------------------------------------------------
 void IN_BLINK_SELECTOR(void){
+	unsigned char idata i;
    IN_PACKET[0] = IN_BLINK_SELECTORID;
 
-   IN_PACKET[1] = BLINK_SELECTOR;
+   //IN_PACKET[1] = BLINK_SELECTOR;
+
+   for(i=1;i<=IN_BLINK_SELECTORSize;i++)
+   	IN_PACKET[i] = i;
 
    IN_BUFFER.Ptr = IN_PACKET;
 

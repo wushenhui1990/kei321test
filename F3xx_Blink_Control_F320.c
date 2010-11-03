@@ -101,10 +101,10 @@ void Blink_Update(void);
 // Global Variables
 // ----------------------------------------------------------------------------
 // Last packet received from host
-unsigned char xdata OUT_PACKET[9] = {0,0,0,0,0,0,0,0,0};
+unsigned char xdata OUT_PACKET[16];// = {0,0,0,0,0,0,0,0,0};
 
 // Next packet to send to host
-unsigned char xdata IN_PACKET[3]  = {0,0,0};
+unsigned char xdata IN_PACKET[64];//  = {0,0,0};
 
 //-----------------------------------------------------------------------------
 // Interrupt Service Routines
@@ -331,7 +331,7 @@ void Usb_Init(void)
 #endif /* _USB_LOW_SPEED_ */
 
    EIE1 |= 0x02;                       // Enable USB0 Interrupts
-   EA = 1;                             // Global Interrupt enable
+  // EA = 1;                             // Global Interrupt enable
                                        // Enable USB0 by clearing the USB
                                        // Inhibit bit
    POLL_WRITE_BYTE(POWER,  0x01);      // and enable suspend detection

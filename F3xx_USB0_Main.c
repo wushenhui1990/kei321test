@@ -103,13 +103,15 @@ void main(void)
 
 	Usb_Init();
 
+	EA = 1;
+
    while (1)
    {
-      if (BLINK_SELECTORUPDATE)
-      {
-         BLINK_SELECTORUPDATE = 0;
+      //if (BLINK_SELECTORUPDATE)
+      //{
+       //  BLINK_SELECTORUPDATE = 0;
          SendPacket (IN_BLINK_SELECTORID);
-      }
+      //}
 
    			event_process();
    }
