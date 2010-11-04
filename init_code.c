@@ -69,13 +69,13 @@ void Oscillator_Init()
     CLKSEL    = 0x02;
     OSCICN    = 0x83;
 }
-/*
+
 void Interrupts_Init()
 {
     EIE1      = 0x02;
     IE        = 0x82;
 }
-*/
+
 // Initialization function for device,
 // Call Init_Device() from your main program
 void Init_Device(void)

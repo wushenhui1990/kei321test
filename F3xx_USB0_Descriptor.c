@@ -66,14 +66,14 @@ unsigned char code HID_report_desc[] =
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
     0xa1, 0x01,                    // COLLECTION (Application)
 
-    0x85, CMD_ID_CONFIG_SENSOR,       // Report ID
-    0x95, CMD_LEN_CONFIG_SENSOR,   //   REPORT_COUNT ()
+    0x85, REPORT_ID_OUT_CMD,       // Report ID
+    0x95, REPORT_ID_OUT_CMD_LEN,   //   REPORT_COUNT ()
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
     0x09, 0x01,                    //   USAGE (Vendor Usage 1)
     0x91, 0x02,                    //   OUTPUT (Data,Var,Abs)
-
+ /*
     0x85, OUT_BLINK_ENABLEID,      // Report ID
     0x95, OUT_BLINK_ENABLESize,    //   REPORT_COUNT ()
     0x75, 0x08,                    //   REPORT_SIZE (8)
@@ -89,9 +89,9 @@ unsigned char code HID_report_desc[] =
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
     0x09, 0x01,                    //   USAGE (Vendor Usage 1)
     0x91, 0x02,                    //   OUTPUT (Data,Var,Abs)
-
-    0x85, IN_BLINK_SELECTORID,     // Report ID
-    0x95, IN_BLINK_SELECTORSize,   //   REPORT_COUNT ()
+*/
+    0x85, REPORT_ID_IN_IMAGE,     // Report ID
+    0x95, REPORT_ID_IN_IMAGE_LEN,   //   REPORT_COUNT ()
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
@@ -99,14 +99,14 @@ unsigned char code HID_report_desc[] =
     0x81, 0x02,                    //   INPUT (Data,Var,Abs)
 
 
-    0x85, IN_BLINK_STATSID,        // Report ID
-    0x95, IN_BLINK_STATSSIZE,      //   REPORT_COUNT ()
+    0x85, REPORT_ID_IN_MTOUCH,        // Report ID
+    0x95, REPORT_ID_IN_MTOUCH_LEN,      //   REPORT_COUNT ()
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
     0x09, 0x01,                    //   USAGE (Vendor Usage 1)
     0x81, 0x02,                    //   INPUT (Data,Var,Abs)
-
+/*
     0x85, FEATURE_BLINK_DIMMERID,  // Report ID
     0x95, FEATURE_BLINK_DIMMERSIZE,//   REPORT_COUNT ()
     0x75, 0x08,                    //   REPORT_SIZE (8)
@@ -114,7 +114,7 @@ unsigned char code HID_report_desc[] =
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
     0x09, 0x01,                    //   USAGE (Vendor Usage 1)
     0xB1, 0x02,                    //   FEATURE (Data,Var,Abs)
-
+*/
     0xC0                           //   end Application Collection
 };
 unsigned char code HID_report_desc_size = sizeof( HID_report_desc );		// export report desc size
