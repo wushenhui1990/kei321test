@@ -42,7 +42,7 @@
 
 #include "c8051f3xx.h"
 #include "F3xx_USB0_Register.h"
-#include "F3xx_Blink_Control.h"
+#include "F3xx_USB0_ReportHandler.h"
 #include "F3xx_USB0_InterruptServiceRoutine.h"
 #include "F3xx_USB0_Descriptor.h"
 
@@ -59,13 +59,35 @@ extern u8 	g_ev_head;
 extern u8 	g_ev_tail;
 extern u8 	g_ev_len;
 
+void Usb_Init(void)
+{
+   POLL_WRITE_BYTE(POWER,  0x08);      // Force Asynchronous USB Reset
+   POLL_WRITE_BYTE(IN1IE,  0x07);      // Enable Endpoint 0-2 in interrupts
+   POLL_WRITE_BYTE(OUT1IE, 0x07);      // Enable Endpoint 0-2 out interrupts
+   POLL_WRITE_BYTE(CMIE,   0x07);      // Enable Reset, Resume, and Suspend
+                                       // interrupts
+   USB0XCN = 0xE0;                     // Enable transceiver; select full speed
+   POLL_WRITE_BYTE(CLKREC, 0x80);      // Enable clock recovery, single-step
+                                       // mode disabled
+
+   EIE1 |= 0x02;                       // Enable USB0 Interrupts
+  // EA = 1;                             // Global Interrupt enable
+                                       // Enable USB0 by clearing the USB
+                                       // Inhibit bit
+   POLL_WRITE_BYTE(POWER,  0x01);      // and enable suspend detection
+}
+
 
 #define	TRIG_TIME	1000
 static void  func_for_debug(void) 
 {
 
-	F(("status:%ld [%02bx][%02bx][%02bx]\n",g_ticks/1000,g_ev_head,g_ev_tail,g_ev_len));
-			
+	FS(("status: "));
+	FB((g_ev_head));
+	FB((g_ev_tail));
+	FB((g_ev_len));
+	FS(("\n"));
+
 
 	return;
 }
@@ -79,10 +101,6 @@ void main(void)
    	timer_ev_unit_st xdata unit;
 
 	Init_Device();	  //use code generate by silicon tool.
-
-#if(UART_DEBUG==1)
-	uart_init_user();
-#endif
 
 //-----------------------------------------
 	event_init();

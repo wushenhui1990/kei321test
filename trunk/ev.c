@@ -16,13 +16,15 @@ void (*g_ev_handler[MAX_EVENT_QUEUE])(void);
 
 void ev_default_handler(void)
 {
- 	F(("in ev_default_handler\r\n"));
+#if(EVENT_DEBUG==1)		
+ 	FS(("in ev_default_handler\r\n"));
+#endif
 	return;
 }
 
 void event_init(void)
 {
-	u8	xdata i;
+	u8	idata i;
 	for(i=0;i<MAX_EVENT_QUEUE;i++)
 	{
 		g_ev_event[i]=EVENT_ID_INVALID;
@@ -50,7 +52,11 @@ char event_send(u8 ev_id) reentrant
 		return 1;
 	}
 #if(EVENT_DEBUG==1)		
-	F(("+++ err[%02bx] [%02bx][%02bx][%02bx]\n",ev_id,g_ev_head,g_ev_tail,g_ev_len));
+	FS(("+++ err "));
+	FB((ev_id));
+	FB((g_ev_head));
+	FB((g_ev_tail));
+	FB((g_ev_len));
 #endif
 	return	0;
 	
@@ -58,7 +64,7 @@ char event_send(u8 ev_id) reentrant
 //static unsigned long debug_cnt=0;
 void event_process(void)  
 {
-	u8  xdata ev_id;	
+	u8  idata ev_id;	
 	//u8  ea_save = IE;
 
 	if(g_ev_len) 
@@ -74,7 +80,13 @@ void event_process(void)
 		g_ev_event[g_ev_head]= EVENT_ID_INVALID;		//reset ev
 
 #if(EVENT_DEBUG==1)
-		F(("---[%bx] [%bx][%bx][%bx]\r\n",ev_id,g_ev_head,g_ev_tail,g_ev_len));
+		FS(("--- "));
+		FB((ev_id));
+		FB((g_ev_head));
+		FB((g_ev_tail));
+		FB((g_ev_len));
+		FS(("\n"));
+
 #endif
 		g_ev_head = (g_ev_head+1)% MAX_EVENT_QUEUE;	  //update header and len		
 		g_ev_len--;		
@@ -98,12 +110,20 @@ char event_cb_regist(u8 ev_id,void (*pFunc)(void))
 {
 	if(ev_id>= MAX_EVENT_QUEUE)
 	{
-	 	F(("registe invalid id:%bx\r\n",ev_id));
+#if(EVENT_DEBUG==1)		
+	FS(("reg invalid id: "));
+	FB((ev_id));
+	FS(("\n"));
+#endif
 		return 0;
 	}
 	if(g_ev_handler[ev_id] != ev_default_handler)
 	{
-		F(("has registed id:%bx\r\n",ev_id));		
+#if(EVENT_DEBUG==1)		
+	FS(("registed id: "));
+	FB((ev_id));
+	FS(("\n"));
+#endif
 		return 0;
 	}
 	g_ev_handler[ev_id] = pFunc;
@@ -114,12 +134,20 @@ char event_cb_unregist(u8 ev_id)
 {
 	if(ev_id>= MAX_EVENT_QUEUE)
 	{
-	 	F(("unregiste invalid id:%bx\r\n",ev_id));
+#if(EVENT_DEBUG==1)		
+	FS(("unreg invalid id: "));
+	FB((ev_id));
+	FS(("\n"));
+#endif
 		return 0;
 	}
 	if(g_ev_handler[ev_id] == ev_default_handler)
 	{
-		F(("has no registed:%bx\r\n",ev_id));		
+#if(EVENT_DEBUG==1)		
+	FS(("no reged id: "));
+	FB((ev_id));
+	FS(("\n"));
+#endif
 		return 0;
 	}
 	g_ev_handler[ev_id] = ev_default_handler;
