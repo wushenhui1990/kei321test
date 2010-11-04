@@ -4,7 +4,7 @@
 #include "config.h"
 
 #if(UART_DEBUG==1)
-void uart_init(void);
+void uart_init_user(void);
 void uart_printf(char *fmt,...);
 #define F(x)  uart_printf x
 #else

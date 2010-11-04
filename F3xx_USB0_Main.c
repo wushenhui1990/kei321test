@@ -81,7 +81,7 @@ void main(void)
 	Init_Device();	  //use code generate by silicon tool.
 
 #if(UART_DEBUG==1)
-	uart_init();
+	uart_init_user();
 #endif
 
 //-----------------------------------------
