@@ -6,7 +6,7 @@ static timer_event_st		  xdata		g_sys_timer_event;
 
 void timer_event_init(void)
 {
-	u8	xdata i=0;
+	u8	idata i=0;
 
 	for(i=0;i<MAX_TIMER_EVENT_QUEUE;i++)
     {
@@ -26,7 +26,7 @@ void timer_event_init(void)
 */
 char timer_event_add(timer_ev_unit_st*ev_unit)
 {
-	char xdata ret = 0;
+	char idata ret = 0;
 	//bit ea_save = EA;
 
 	EA = 0;
@@ -84,7 +84,7 @@ char timer_event_del(u8 ev_id)
 */
 void timer_event_process(void)
 {
-	u8 xdata i;
+	u8 idata i;
 
 	for(i=0;i<g_sys_timer_event.tail;i++)
 	{

@@ -34,8 +34,21 @@
 
 #include "F3xx_USB0_ReportHandler.h"
 #include "F3xx_USB0_InterruptServiceRoutine.h"
-#include "F3xx_Blink_Control.h"
+//#include "F3xx_USB0_ReportHandler.h"
 #include "uart.h"
+#include "type.h"
+
+
+
+
+#define  OUT_PACKET_LEN		16
+#define  IN_PACKET_LEN		64
+
+unsigned char xdata OUT_PACKET[OUT_PACKET_LEN];// = {0,0,0,0,0,0,0,0,0};
+unsigned char xdata IN_PACKET[IN_PACKET_LEN];//  = {0,0,0};
+
+
+extern u8 cmd_config_sensor[];
 
 // ----------------------------------------------------------------------------
 // Local Function Prototypes
@@ -167,8 +180,6 @@ void send_image_to_host(void)
 void send_mtouch_to_host(void)
 {
    IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
-   IN_PACKET[1] = BLINK_LED1ACTIVE;
-   IN_PACKET[2] = BLINK_LED2ACTIVE;
 
    IN_BUFFER.Ptr = IN_PACKET;
    IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
@@ -207,17 +218,27 @@ void OUT_BLINK_ENABLE(void)
 //-----------------------------------------------------------------------------
 void recv_cmd_from_host(void)
 {
-/*
-   unsigned char i;
-   for(i = 1; i < 9; i++)
-   {
-      BLINK_PATTERN[i-1] = OUT_BUFFER.Ptr[i];
-   }
-*/
+
+//	u8 idata cnt,idx;
+
 	unsigned char cmd = OUT_BUFFER.Ptr[1];
 	unsigned char len = OUT_BUFFER.Ptr[2];
+
+  #if(UART_DEBUG)
+	FS(("recv cmd:"));
+	FB((cmd));
+	FB((len));
+	FS(("\n"));
+  #endif
+//	for(idx = 0; idx <cnt; idx++)
+//	{
+//		uart_write_reg(cmd_config_sensor[idx<<1],cmd_config_sensor[(idx<<1)+1]);	
+//
+//	}
+
 	
-	F(("cmd: %bx len: %bx\n",cmd,len));
+	
+
 }
 
 // ----------------------------------------------------------------------------
