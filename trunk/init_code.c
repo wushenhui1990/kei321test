@@ -1,3 +1,4 @@
+
 /////////////////////////////////////
 //  Generated Initialization File  //
 /////////////////////////////////////
@@ -13,7 +14,6 @@ void PCA_Init()
     PCA0MD    = 0x00;
     PCA0CPM0  = 0x46;
     PCA0CPL4  = 0xE9;
-    //PCA0MD    |= 0x40;
     PCA0CPH0  = 0x01;
 }
 
@@ -22,9 +22,14 @@ void Timer_Init()
     TCON      = 0x50;
     TMOD      = 0x21;
     CKCON     = 0x0A;
-    TL0       = 0x0D;
-    TH0       = 0xFE;
+    TL0       = 0xFF;
+    TH0       = 0xFA;
     TH1       = 0x98;
+}
+
+void UART_Init()
+{
+    SCON0     = 0x10;
 }
 
 void Port_IO_Init()
@@ -82,6 +87,7 @@ void Init_Device(void)
 {
     PCA_Init();
     Timer_Init();
+    UART_Init();
     Port_IO_Init();
     Oscillator_Init();
     //Interrupts_Init();

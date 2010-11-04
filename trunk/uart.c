@@ -14,7 +14,7 @@
 
 u8 xdata uart_send_buf[64];
 
-void uart_init(void)
+void uart_init_user(void)
 {
 
     TI0 = 1; 		// Indicate TX0 ready
