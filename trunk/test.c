@@ -56,9 +56,11 @@ void flash_rw_test(void)
 }
 
 
+extern void config_sensor_test(void);
 void test_func(void)
 {		
-  	flash_rw_test();
+  	//flash_rw_test();
+	config_sensor_test();
 }
 
 #else
