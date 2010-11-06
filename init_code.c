@@ -1,4 +1,3 @@
-
 /////////////////////////////////////
 //  Generated Initialization File  //
 /////////////////////////////////////
@@ -21,15 +20,14 @@ void Timer_Init()
 {
     TCON      = 0x50;
     TMOD      = 0x21;
-    CKCON     = 0x0A;
-    TL0       = 0xFF;
-    TH0       = 0xFA;
-    TH1       = 0x98;
+    TL0       = 0x30;
+    TH0       = 0xF8;
+    TH1       = 0xFF;
 }
 
 void UART_Init()
 {
-    SCON0     = 0x10;
+    SCON0     = 0x90;
 }
 
 void Port_IO_Init()
@@ -38,8 +36,8 @@ void Port_IO_Init()
     // P0.1  -  Skipped,     Open-Drain, Digital
     // P0.2  -  Skipped,     Open-Drain, Digital
     // P0.3  -  Skipped,     Open-Drain, Digital
-    // P0.4  -  TX0 (UART0), Open-Drain, Digital
-    // P0.5  -  RX0 (UART0), Open-Drain, Digital
+    // P0.4  -  TX0 (UART0), Push-Pull,  Digital
+    // P0.5  -  RX0 (UART0), Push-Pull,  Digital
     // P0.6  -  Skipped,     Open-Drain, Digital
     // P0.7  -  Skipped,     Open-Drain, Digital
 
@@ -56,6 +54,7 @@ void Port_IO_Init()
     // P2.2  -  Unassigned,  Open-Drain, Digital
     // P2.3  -  Unassigned,  Open-Drain, Digital
 
+    P0MDOUT   = 0x30;
     P2MDOUT   = 0x02;
     P0SKIP    = 0xCF;
     P1SKIP    = 0xFF;

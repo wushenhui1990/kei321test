@@ -46,9 +46,13 @@
 
 unsigned char xdata OUT_PACKET[OUT_PACKET_LEN];// = {0,0,0,0,0,0,0,0,0};
 unsigned char xdata IN_PACKET[IN_PACKET_LEN];//  = {0,0,0};
+unsigned char xdata cur_cam_idx ;
+
+cam_send_img_stat_st cam_status[CAM_COUNT];
 
 
-extern u8 cmd_config_sensor[];
+extern u8 code cmd_config_sensor[];
+extern u8 code cmd_config_sensor_cnt;
 
 // ----------------------------------------------------------------------------
 // Local Function Prototypes
@@ -149,22 +153,34 @@ BufferStructure IN_BUFFER, OUT_BUFFER;
 //
 // ****************************************************************************
 
-
 // ----------------------------------------------------------------------------
 // send_image_to_host()
 // ----------------------------------------------------------------------------
 // This handler formats a BLINK_SELECTOR report, which requests a new
 // blink pattern from the host application.
+//
+//	id, cam, idx, len, +data
+//
 //-----------------------------------------------------------------------------
 void send_image_to_host(void)
 {
 	unsigned char idata i;
-	IN_PACKET[0] = REPORT_ID_IN_IMAGE;
+
+	cur_cam_idx = 0;
+
+	IN_PACKET[0] = REPORT_ID_IN_IMAGE;	 //id
 	
-	//IN_PACKET[1] = BLINK_SELECTOR;
-	
-	for(i=1;i<=REPORT_ID_IN_IMAGE_LEN;i++)
-	IN_PACKET[i] = i;
+	IN_PACKET[1] = cam_status[cur_cam_idx].cam_num;	   		//which sensor ,left or right
+	IN_PACKET[2] = cam_status[cur_cam_idx].send_cur_idx++;
+	IN_PACKET[3] = 60;
+
+	cam_status[cur_cam_idx].send_cur_idx%=cam_status[cur_cam_idx].send_tot_cnt;
+
+
+	for(i=4;i<=REPORT_ID_IN_IMAGE_LEN;i++)
+	{
+		IN_PACKET[i] = i;
+	}
 	
 	IN_BUFFER.Ptr = IN_PACKET;
 	
@@ -219,22 +235,25 @@ void OUT_BLINK_ENABLE(void)
 void recv_cmd_from_host(void)
 {
 
-//	u8 idata cnt,idx;
+	u8 idata idx,addr,val;
 
-	unsigned char cmd = OUT_BUFFER.Ptr[1];
-	unsigned char len = OUT_BUFFER.Ptr[2];
+	u8 cmd = OUT_BUFFER.Ptr[1];
+	u8 len = OUT_BUFFER.Ptr[2];
 
-  #if(UART_DEBUG)
 	FS(("recv cmd:"));
 	FB((cmd));
 	FB((len));
 	FS(("\n"));
-  #endif
-//	for(idx = 0; idx <cnt; idx++)
-//	{
-//		uart_write_reg(cmd_config_sensor[idx<<1],cmd_config_sensor[(idx<<1)+1]);	
-//
-//	}
+
+	for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
+	{
+		addr = 	cmd_config_sensor[idx<<1];
+		val  =  cmd_config_sensor[(idx<<1)+1];
+		//FB((addr));
+		//FB((val));
+		//FS(("\n"));
+		uart_write_reg(addr,val);	
+	}
 
 	
 	
@@ -400,4 +419,15 @@ void ReportHandler_OUT(unsigned char R_ID){
       // If Report IDs didn't match, increment the index pointer
       index++;
    }
+}
+
+void cam_status_init(void)
+{
+ 	u8 idata i;
+	for(i = 0;i<CAM_COUNT;i++)
+	{
+	 	cam_status[i].cam_num = i;
+		cam_status[i].send_cur_idx = 0;
+		cam_status[i].send_tot_cnt = 10;
+	}
 }

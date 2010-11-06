@@ -5,6 +5,10 @@
 #include "type.h"
 #include "uart.h"
 #include "bitop.h"
+#include "INTRINS.H"
+
+#include "fpga_define.h"
+
 
 #if(UART_DEBUG==1)
 
@@ -89,7 +93,9 @@ void uart_puthex_word(u16 b)
     }
 }
 
-//#else
+#endif
+
+
 //------------------------------------------------
 //uart commands
 #define CMD_PBI					0x4C			//single r/w,burst w
@@ -104,9 +110,7 @@ void uart_puthex_word(u16 b)
 
 
 
-
-#if 0
-u8 cmd_config_sensor[] = 
+u8 code cmd_config_sensor[] = 
 {
 	 0x12, 0x80  ,
 	 0x13, 0x00  ,
@@ -245,7 +249,7 @@ u8 cmd_config_sensor[] =
 	 0x1a, 0x0D  ,  
 	 0x19, 0x77  ,
 };
-#endif
+u8 code cmd_config_sensor_cnt = (sizeof(cmd_config_sensor)>>1);
 
 
 void uart_send(u8 *buff,u16 len)
@@ -294,7 +298,7 @@ void uart_write_reg(u32 addr, u8 value)
 
 void uart_read_reg(u32 addr, u8 *pvalue)
 {
-	u8 buf[8];
+	u8 buf[5];
 
 	buf[0] = CMD_PBI;
 	buf[1] = PBI_APB_READ;
@@ -303,14 +307,17 @@ void uart_read_reg(u32 addr, u8 *pvalue)
 	buf[4] = (u8)(addr>>16);
 
 	uart_send(buf,5);
-
+//	_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();
+//	_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();
+//	_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();
+//	_nop_();_nop_();_nop_();_nop_();_nop_();_nop_();
 	uart_read(pvalue,1);
 
 }
 
-void uart_burst_write(u32 addr,u8 *buf,u32 len)
+void uart_burst_write(u32 addr,u8 *buf,u8 len)
 {
-	u8 bufh[8];
+	u8 bufh[5];
 
 	bufh[0] = CMD_PBI;
 	bufh[1] = PBI_APB_WRITE;
@@ -322,9 +329,9 @@ void uart_burst_write(u32 addr,u8 *buf,u32 len)
 
 }
 
-void uart_burst_read(u32 addr,u8 *buf,u32 len)
+void uart_burst_read(u32 addr,u8 *buf,u8 len)
 {
-	u8 bufh[8];
+	u8 bufh[5];
 
 	bufh[0] = CMD_BRPBI;
 	bufh[1] = PBI_APB_READ;
@@ -334,8 +341,132 @@ void uart_burst_read(u32 addr,u8 *buf,u32 len)
 	uart_send(bufh,5);
 	uart_read(buf,len);
 }
+/*
+		else if (!strcmp(command,"i2cwd"))
+		{
+			fscanf(fScript,"%x",&Addr);
+			fscanf(fScript,"%x",&Reg);
+			sprintf(line,"write sensor reg 0x%02x 0x%02x\n",Addr,Reg);
+			dlg->PrintInfo(line);
+			dlg->m_Debug.WriteRegister(0xC405,0x21);
+			dlg->m_Debug.WriteRegister(0xC408,(UCHAR)Addr);
+			dlg->m_Debug.WriteRegister(0xC409,(UCHAR)Reg);
+			dlg->m_Debug.WriteRegister(0xC406,0x14);
+			dlg->m_Debug.WriteRegister(0xC404,0x01);
+		else if (!strcmp(command,"i2crd"))
+		{
+			fscanf(fScript,"%x",&Addr);
+			fscanf(fScript,"%x",&RegComp);
+			sprintf(line,"read sensor reg:0x%02x=",Addr);
+			dlg->PrintInfo(line);
+			dlg->m_Debug.WriteRegister(0xC405,0x21);						//i2c slave address
+			dlg->m_Debug.WriteRegister(0xC408,(UCHAR)Addr);					//sensor reg address
+			dlg->m_Debug.WriteRegister(0xC406,0x12);						//write len 1byte
+			dlg->m_Debug.WriteRegister(0xC404,0x01);						//start write
+			dlg->m_Debug.WriteRegister(0xC406,0x13);						//read len 1byte
+			dlg->m_Debug.WriteRegister(0xC404,0x01);						//start read
+			dlg->m_Debug.ReadRegister(0xC40B,(UCHAR *)&Reg);
+*/
+
+void i2c_write_reg(u8 addr,u8 val)
+{
+	uart_write_reg(I2C_ADDR,0x21);
+	uart_write_reg(I2C_DATA0,addr);
+	uart_write_reg(I2C_DATA1,val);
+	uart_write_reg(I2C_CFG,0x14);
+	uart_write_reg(I2C_CTRL,0x01);
+}
+
+void i2c_read_reg(u8 addr,u8* val)
+{
+	uart_write_reg(I2C_ADDR,0x21);						//i2c slave address
+	uart_write_reg(I2C_DATA0,addr);						//sensor reg address
+	uart_write_reg(I2C_CFG,0x12);						//write len 1byte
+	uart_write_reg(I2C_CTRL,0x01);						//start write
+	uart_write_reg(I2C_CFG,0x13);						//read len 1byte
+	uart_write_reg(I2C_CTRL,0x01);						//start read
+	uart_read_reg(I2C_RDATA,val);
+}
+
+void config_sensor_test(void)
+{
+ /*
+	u8 idata idx,addr,val;
+	for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
+	{
+		addr = 	cmd_config_sensor[idx<<1];
+		val  =  cmd_config_sensor[(idx<<1)+1];
+	
+		i2c_write_reg(addr,val);
+		
+		i2c_read_reg(addr,&val);
+		_nop_();	
+	}
+  */
+{	
+		u8 val[12] ;
+		u16 volatile i;
+		/*
+		//uart_write_reg(UART_OVERTIME,0x30);
+		for(i =0;i<10;i++)
+		{
+		 	uart_read_reg(UART_SRCPND+i,	&val[i]);
+		}
+		*/
+		uart_read_reg(UART_SRCPND,	&val[0]);	
+		uart_read_reg(UART_MASK_SET,&val[1]);
+		uart_read_reg(UART_MASK_CLR,&val[2]);
+		uart_read_reg(UART_CONFIG,	&val[3]);
+		uart_read_reg(UART_MODE	,	&val[4]);
+		uart_read_reg(UART_OVERTIME,&val[5]);
+		uart_read_reg(UART_BAUDRATE,&val[6]);
+		uart_read_reg(UART_RLENL,	&val[7]);
+		uart_read_reg(UART_RLENH,	&val[8]);
+		uart_read_reg(UART_READ	,	&val[9]);
+	   
 
 
 
 
-#endif
+//	uart_write_reg(UART_OVERTIME,0x20);
+	uart_write_reg(I2C_ADDR,0x21);
+	uart_read_reg(I2C_ADDR,&val[0]);
+
+
+	uart_write_reg(I2C_ADDR,0x21);
+
+	uart_read_reg(UART_OVERTIME,&val[0]);
+	uart_read_reg(I2C_ADDR,&val[0]);
+
+	uart_read_reg(I2C_DATA0,&val);
+	uart_read_reg(I2C_DATA0,&val);
+	uart_read_reg(I2C_DATA0,&val);
+  }
+}
+
+void get_frame(u8*buf,u8 len)
+{
+	u16 i ;
+	u8 val = 0;
+ 	uart_write_reg(SIF_FRMSTART,0x01);
+
+	for(i=0;i<50000;i++)
+	_nop_();
+
+	while(1)
+	{
+		uart_read_reg(SIF_FRMSTART,&val);
+		if(val==0) break;
+	}
+
+	uart_write_reg(PDMC_VSYNC,0x01);
+
+	uart_burst_read(PDMC_PDATA,buf,len);
+
+	uart_write_reg(PBI_MODE,0x0);
+
+}
+
+
+
+

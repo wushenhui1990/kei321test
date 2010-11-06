@@ -57,11 +57,27 @@ typedef struct{
    unsigned char* Ptr;
 } BufferStructure;
 
+ typedef enum
+ {
+  	CAM_LEFT 	=0,
+	CAM_RIGHT	=1,
+	CAM_COUNT	
+ }CAM_NUM_ENUM;
+
+ typedef struct 
+ {
+ 	unsigned char cam_num;
+ 	unsigned char send_cur_idx;
+	unsigned char send_tot_cnt;
+ }cam_send_img_stat_st;
+
 extern void ReportHandler_IN_ISR(unsigned char);
 extern void ReportHandler_IN_Foreground(unsigned char);
 extern void ReportHandler_OUT(unsigned char);
 extern void Setup_OUT_BUFFER(void);
 
 extern BufferStructure IN_BUFFER, OUT_BUFFER;
+
+extern void cam_status_init(void);
 
 #endif

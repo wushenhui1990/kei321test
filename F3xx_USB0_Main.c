@@ -103,11 +103,11 @@ void main(void)
 	Init_Device();	  //use code generate by silicon tool.
 
 //-----------------------------------------
-	event_init();
-	timer_event_init();
+//	event_init();
+//	timer_event_init();
 
 //-----------------------------------------add a timer event for printf
-#if 1
+#if 0
 	unit.event = EVENT_ID_TIMER_DEBUG;
 	unit.time = TRIG_TIME;
 	unit.callback = func_for_debug;
@@ -116,15 +116,18 @@ void main(void)
 //-----------------------------------------
 
 
-	Usb_Init();
+//	Usb_Init();
 
-	Interrupts_Init();	   //open relative interrupt.
+
+	cam_status_init();
 
 	test_func();
 
+ 	//Interrupts_Init();	   //open relative interrupt.
+
 	while (1)
 	{
-		SendPacket (REPORT_ID_IN_IMAGE);		
+		//SendPacket (REPORT_ID_IN_IMAGE);		
 		event_process();
 	}
 }
