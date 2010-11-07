@@ -405,7 +405,7 @@ void config_sensor_test(void)
   */
 {	
 		u8 val[12] ;
-		u16 volatile i;
+	//	u16 volatile i;
 		/*
 		//uart_write_reg(UART_OVERTIME,0x30);
 		for(i =0;i<10;i++)

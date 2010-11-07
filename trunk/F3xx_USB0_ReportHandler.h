@@ -78,6 +78,6 @@ extern void Setup_OUT_BUFFER(void);
 
 extern BufferStructure IN_BUFFER, OUT_BUFFER;
 
-extern void cam_status_init(void);
+extern void report_handler_init(void);
 
 #endif

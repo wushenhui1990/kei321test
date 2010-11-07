@@ -5,9 +5,8 @@
 #include "config.h"
 #include "type.h"
 //================================================
-#define EVENT_ID_TIMER_DEBUG 		0x00
-#define EVENT_ID_TIMER_5000MS		0x01
-#define EVENT_ID_TIMER_UARTRCV		0x02
+#define EVENT_ID_TIMER_DEBUG 			0x00
+#define EVENT_ID_RETURN_HOST_CMD		0x01
 
 
 #define EVENT_ID_INVALID			0xFF
