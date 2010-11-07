@@ -18,7 +18,7 @@ void PCA_Init()
 
 void Timer_Init()
 {
-    TCON      = 0x50;
+    TCON      = 0x40;
     TMOD      = 0x21;
     TL0       = 0x30;
     TH0       = 0xF8;
@@ -77,7 +77,7 @@ void Oscillator_Init()
 void Interrupts_Init()
 {
     EIE1      = 0x02;
-    IE        = 0x82;
+    IE        = 0x80;
 }
 
 // Initialization function for device,
@@ -89,5 +89,5 @@ void Init_Device(void)
     UART_Init();
     Port_IO_Init();
     Oscillator_Init();
-    //Interrupts_Init();
+    Interrupts_Init();
 }

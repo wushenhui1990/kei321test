@@ -31,12 +31,14 @@
 // ----------------------------------------------------------------------------
 // Header files
 // ----------------------------------------------------------------------------
-
+#include "c8051f3xx.h"
+#include "F3xx_USB0_Register.h"
 #include "F3xx_USB0_ReportHandler.h"
 #include "F3xx_USB0_InterruptServiceRoutine.h"
 //#include "F3xx_USB0_ReportHandler.h"
 #include "uart.h"
 #include "type.h"
+#include "ev.h"
 
 
 
@@ -53,6 +55,8 @@ cam_send_img_stat_st cam_status[CAM_COUNT];
 
 extern u8 code cmd_config_sensor[];
 extern u8 code cmd_config_sensor_cnt;
+
+extern void Fifo_Write_Foreground (unsigned char addr, unsigned int uNumBytes, unsigned char * pData);
 
 // ----------------------------------------------------------------------------
 // Local Function Prototypes
@@ -226,6 +230,64 @@ void OUT_BLINK_ENABLE(void)
 }
 */
 
+typedef enum
+{
+	DATA_LEFT_IMAGE = 0,
+	DATA_RIGHT_IMAGE = 1,
+	DATA_CMD_WRITE_REG =2,
+	DATA_CMD_READ_REG=3,
+	DATA_CMD_CONFIG_SENSOR=4,
+	DATA_TYPE_COUNT
+}COM_DATA_TYPE;
+
+
+void send_return_cmd_to_host(void)
+{
+	bit EAState;
+	unsigned char ControlReg;
+
+	EAState = EA;
+	EA = 0;
+
+	POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
+
+	// Read contol register for EP 1
+	POLL_READ_BYTE (EINCSR1, ControlReg);
+
+	if (EP_STATUS[1] == EP_HALT)        // If endpoint is currently halted,send a stall
+	{
+		POLL_WRITE_BYTE (EINCSR1, rbInSDSTL);
+	}
+
+	else if(EP_STATUS[1] == EP_IDLE)
+	{
+		// the state will be updated inside the ISR handler
+		EP_STATUS[1] = EP_TX;
+
+		if (ControlReg & rbInSTSTL)      // Clear sent stall if last  packet returned a stall
+		{
+			POLL_WRITE_BYTE (EINCSR1, rbInCLRDT);
+		}
+
+		if (ControlReg & rbInUNDRUN)     // Clear underrun bit if it was set
+		{
+			POLL_WRITE_BYTE (EINCSR1, 0x00);
+		}
+
+		// ReportHandler_IN_Foreground (ReportID);
+
+		// Put new data on Fifo
+		Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(unsigned char *)IN_BUFFER.Ptr);
+
+		POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
+		// Set In Packet ready bit,
+	}                                   // indicating fresh data on FIFO 1
+
+	EA = EAState;
+
+}
+
+
 
 // ----------------------------------------------------------------------------
 // recv_cmd_from_host()
@@ -235,30 +297,71 @@ void OUT_BLINK_ENABLE(void)
 void recv_cmd_from_host(void)
 {
 
-	u8 idata idx,addr,val;
+	u8 	idata idx,reg_val;
+	u16  reg_addr;
 
 	u8 cmd = OUT_BUFFER.Ptr[1];
-	u8 len = OUT_BUFFER.Ptr[2];
+	//u8 len = OUT_BUFFER.Ptr[2];
 
-	FS(("recv cmd:"));
-	FB((cmd));
-	FB((len));
-	FS(("\n"));
-
-	for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
+	//FS(("recv cmd:"));
+	//FB((cmd));
+	//FS(("\n"));
+	
+	if(cmd ==DATA_CMD_WRITE_REG)
 	{
-		addr = 	cmd_config_sensor[idx<<1];
-		val  =  cmd_config_sensor[(idx<<1)+1];
-		//FB((addr));
-		//FB((val));
-		//FS(("\n"));
-		uart_write_reg(addr,val);	
-	}
+		reg_addr = OUT_BUFFER.Ptr[2]|(OUT_BUFFER.Ptr[3]<<8);
+		reg_val  =  OUT_BUFFER.Ptr[4];
+		uart_write_reg(reg_addr,reg_val);
 
-	
-	
+
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_WRITE_REG;		//date type
+		IN_PACKET[2] = 0; //err code				//err code
+		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
+		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		
+		IN_BUFFER.Ptr = IN_PACKET;
+		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+
+		event_send(EVENT_ID_RETURN_HOST_CMD);
+
+	}
+	else if(cmd ==DATA_CMD_READ_REG)
+	{
+		reg_addr = OUT_BUFFER.Ptr[2]|(OUT_BUFFER.Ptr[3]<<8);
+		uart_read_reg(reg_addr,&reg_val);	
+
+
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_READ_REG;		//date type
+		IN_PACKET[2] = 0; //err code				//err code
+		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
+		IN_PACKET[4] = OUT_BUFFER.Ptr[3];
+		IN_PACKET[5] = reg_val;		
+		IN_BUFFER.Ptr = IN_PACKET;
+		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+
+		event_send(EVENT_ID_RETURN_HOST_CMD);
+
+
+	}
+	else if(cmd ==DATA_CMD_CONFIG_SENSOR)
+	{
+
+		for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
+		{
+			//addr = 	cmd_config_sensor[idx<<1];
+			//reg_val  =  cmd_config_sensor[(idx<<1)+1];
+			//FB((addr));
+			//FB((val));
+			//FS(("\n"));
+			//uart_write_reg(addr,val);	
+		}
+
+	}		
 
 }
+
+
 
 // ----------------------------------------------------------------------------
 // OUT_BLINK_RATE()
@@ -421,7 +524,7 @@ void ReportHandler_OUT(unsigned char R_ID){
    }
 }
 
-void cam_status_init(void)
+void report_handler_init(void)
 {
  	u8 idata i;
 	for(i = 0;i<CAM_COUNT;i++)
@@ -430,4 +533,6 @@ void cam_status_init(void)
 		cam_status[i].send_cur_idx = 0;
 		cam_status[i].send_tot_cnt = 10;
 	}
+
+	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_return_cmd_to_host);
 }
