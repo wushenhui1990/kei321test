@@ -102,6 +102,7 @@ void main(void)
 
 	Init_Device();	  //use code generate by silicon tool.
 
+	 TI0 = 1;
 //-----------------------------------------
 	event_init();
 //-----------------------------------------add a timer event for printf
