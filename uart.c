@@ -258,10 +258,10 @@ void uart_send(u8 *buff,u16 len)
 	
     for(i=0;i<len;i++)
     {		
-		SBUF0=buff[i];			 
 		while (!TI0); 
 		TI0 = 0 ;
-    }
+ 		SBUF0=buff[i];			 
+   }
 
 	return ;
 }
@@ -284,7 +284,7 @@ void uart_write_reg(u32 addr, u8 value)
 {
 	u8 buf[6];
 
-	buf[0] = CMD_PBI;
+	buf[0] = CMD_PBI | 0x01;
 	buf[1] = PBI_APB_WRITE;
 	buf[2] = (u8)addr;
 	buf[3] = (u8)(addr>>8);

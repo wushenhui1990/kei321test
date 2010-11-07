@@ -319,6 +319,7 @@ void recv_cmd_from_host(void)
 		IN_PACKET[2] = 0; //err code				//err code
 		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
 		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		
+		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		
 		IN_BUFFER.Ptr = IN_PACKET;
 		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
 
