@@ -230,18 +230,8 @@ void OUT_BLINK_ENABLE(void)
 }
 */
 
-typedef enum
-{
-	DATA_LEFT_IMAGE = 0,
-	DATA_RIGHT_IMAGE = 1,
-	DATA_CMD_WRITE_REG =2,
-	DATA_CMD_READ_REG=3,
-	DATA_CMD_CONFIG_SENSOR=4,
-	DATA_TYPE_COUNT
-}COM_DATA_TYPE;
 
-
-void send_return_cmd_to_host(void)
+void send_debug_info_to_host(void)
 {
 	bit EAState;
 	unsigned char ControlReg;
@@ -294,10 +284,12 @@ void send_return_cmd_to_host(void)
 // ----------------------------------------------------------------------------
 // This handler saves a blinking pattern sent by the host application.
 //-----------------------------------------------------------------------------
+extern u8 g_can_send_data;
+
 void recv_cmd_from_host(void)
 {
 
-	u8 	idata idx,reg_val;
+	u8 	idata idx,sen_addr,reg_val,ret;
 	u16  reg_addr;
 
 	u8 cmd = OUT_BUFFER.Ptr[1];
@@ -319,7 +311,7 @@ void recv_cmd_from_host(void)
 		IN_PACKET[2] = 0; //err code				//err code
 		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
 		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		
-		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		
+		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		//val
 		IN_BUFFER.Ptr = IN_PACKET;
 		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
 
@@ -329,15 +321,16 @@ void recv_cmd_from_host(void)
 	else if(cmd ==DATA_CMD_READ_REG)
 	{
 		reg_addr = OUT_BUFFER.Ptr[2]|(OUT_BUFFER.Ptr[3]<<8);
-		uart_read_reg(reg_addr,&reg_val);	
+		ret = uart_read_reg(reg_addr,&reg_val);	
 
 
 		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
 		IN_PACKET[1] = DATA_CMD_READ_REG;		//date type
-		IN_PACKET[2] = 0; //err code				//err code
+		IN_PACKET[2] = ret; 					//err code
 		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
 		IN_PACKET[4] = OUT_BUFFER.Ptr[3];
-		IN_PACKET[5] = reg_val;		
+		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		//val		
+		IN_PACKET[6] = reg_val;		
 		IN_BUFFER.Ptr = IN_PACKET;
 		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
 
@@ -345,18 +338,61 @@ void recv_cmd_from_host(void)
 
 
 	}
+	else if(cmd ==DATA_CMD_I2C_WRITE_REG)
+	{
+		reg_addr = OUT_BUFFER.Ptr[2];
+		reg_val  = OUT_BUFFER.Ptr[3];
+
+		i2c_write_reg(reg_addr,reg_val);
+
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_I2C_WRITE_REG;	//date type
+		IN_PACKET[2] = 0; 						//err code
+		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
+		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		//val		
+		IN_BUFFER.Ptr = IN_PACKET;
+		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+
+		event_send(EVENT_ID_RETURN_HOST_CMD);
+
+	}
+	else if(cmd ==DATA_CMD_I2C_READ_REG)
+	{
+		reg_addr = OUT_BUFFER.Ptr[2];
+		//reg_val  = OUT_BUFFER.Ptr[3];
+		ret = i2c_read_reg(reg_addr,&reg_val);
+
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_I2C_READ_REG;	//date type
+		IN_PACKET[2] = ret; 					//err code
+		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
+		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		//val
+		IN_PACKET[5] = reg_val;			
+		IN_BUFFER.Ptr = IN_PACKET;
+		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+
+		event_send(EVENT_ID_RETURN_HOST_CMD);
+
+	}
+
 	else if(cmd ==DATA_CMD_CONFIG_SENSOR)
 	{
-
 		for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
 		{
-			//addr = 	cmd_config_sensor[idx<<1];
-			//reg_val  =  cmd_config_sensor[(idx<<1)+1];
-			//FB((addr));
-			//FB((val));
-			//FS(("\n"));
-			//uart_write_reg(addr,val);	
+			sen_addr = 	cmd_config_sensor[idx<<1];
+			reg_val  =  cmd_config_sensor[(idx<<1)+1];
+			i2c_write_reg(sen_addr,reg_val);	
 		}
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_CONFIG_SENSOR;	//date type
+		IN_PACKET[2] = 0; 					//err code
+		IN_BUFFER.Ptr = IN_PACKET;
+		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+
+		event_send(EVENT_ID_RETURN_HOST_CMD);
+
+	   	g_can_send_data = 1;
+	
 
 	}		
 
@@ -525,6 +561,7 @@ void ReportHandler_OUT(unsigned char R_ID){
    }
 }
 
+
 void report_handler_init(void)
 {
  	u8 idata i;
@@ -532,8 +569,8 @@ void report_handler_init(void)
 	{
 	 	cam_status[i].cam_num = i;
 		cam_status[i].send_cur_idx = 0;
-		cam_status[i].send_tot_cnt = 10;
+		cam_status[i].send_tot_cnt = (IMAGE_WIDTH*IMAGE_HEIGHT+(BREAD_ONCE>>1))/BREAD_ONCE;
 	}
 
-	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_return_cmd_to_host);
+	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_debug_info_to_host);
 }

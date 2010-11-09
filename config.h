@@ -3,7 +3,7 @@
 
 
 #ifndef UART_DEBUG
-#define UART_DEBUG		1
+#define UART_DEBUG		0
 #endif
 
 #ifndef SYSCLK

@@ -20,9 +20,10 @@ void Timer_Init()
 {
     TCON      = 0x40;
     TMOD      = 0x21;
+    CKCON     = 0x08;
     TL0       = 0x30;
     TH0       = 0xF8;
-    TH1       = 0xFF;
+    TH1       = 0xF1;
 }
 
 void UART_Init()
@@ -89,5 +90,5 @@ void Init_Device(void)
     UART_Init();
     Port_IO_Init();
     Oscillator_Init();
-    Interrupts_Init();
+    //Interrupts_Init();
 }
