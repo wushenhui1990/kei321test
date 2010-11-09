@@ -71,6 +71,18 @@ typedef struct{
 	unsigned char send_tot_cnt;
  }cam_send_img_stat_st;
 
+ typedef enum
+{
+	DATA_LEFT_IMAGE = 0,
+	DATA_RIGHT_IMAGE = 1,
+	DATA_CMD_WRITE_REG =2,
+	DATA_CMD_READ_REG=3,
+	DATA_CMD_I2C_WRITE_REG=4,
+	DATA_CMD_I2C_READ_REG=5,
+	DATA_CMD_CONFIG_SENSOR=10,
+	DATA_TYPE_COUNT
+}COM_DATA_TYPE;
+
 extern void ReportHandler_IN_ISR(unsigned char);
 extern void ReportHandler_IN_Foreground(unsigned char);
 extern void ReportHandler_OUT(unsigned char);
@@ -79,5 +91,6 @@ extern void Setup_OUT_BUFFER(void);
 extern BufferStructure IN_BUFFER, OUT_BUFFER;
 
 extern void report_handler_init(void);
+void send_debug_info_to_host(void);
 
 #endif

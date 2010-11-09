@@ -46,6 +46,8 @@
 #include "F3xx_USB0_InterruptServiceRoutine.h"
 #include "F3xx_USB0_Descriptor.h"
 
+
+
 //-----------------------------------------------------------------------------
 // Definitions
 //-----------------------------------------------------------------------------
@@ -58,6 +60,8 @@ extern void Interrupts_Init();
 extern u8 	g_ev_head;
 extern u8 	g_ev_tail;
 extern u8 	g_ev_len;
+
+u8 g_can_send_data = 0;
 
 void Usb_Init(void)
 {
@@ -98,15 +102,16 @@ static void  func_for_debug(void)
 void main(void)
 {
 
-   	timer_ev_unit_st xdata unit;
 
 	Init_Device();	  //use code generate by silicon tool.
 
-	 TI0 = 1;
+	TI0 = 1; 			//make uart0 in send enable status
 //-----------------------------------------
 	event_init();
 //-----------------------------------------add a timer event for printf
 #if 0
+{
+   	timer_ev_unit_st xdata unit;
 	IE |= 0x02;		//timer 0 interrupt enable
 	TCON |= 0x10; 	//timer 0 enable
 	timer_event_init();
@@ -114,15 +119,15 @@ void main(void)
 	unit.time = TRIG_TIME;
 	unit.callback = func_for_debug;
 	timer_event_add(&unit);
+}
 #endif
 //-----------------------------------------
 
 
 
-
 	report_handler_init();
 
-	//test_func();
+//	test_func();
 
  	Usb_Init();
 	
@@ -132,6 +137,8 @@ void main(void)
 	{
 		//SendPacket (REPORT_ID_IN_IMAGE);		
 		event_process();
+	    if(g_can_send_data==1)
+			get_frame_data();
 	}
 }
 

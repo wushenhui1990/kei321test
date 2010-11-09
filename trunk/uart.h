@@ -19,10 +19,18 @@
 #endif
 
 
-	void uart_write_reg(u32 addr, u8 value);
-	void uart_read_reg(u32 addr,  u8 *pvalue);
-	void uart_burst_write(u32 addr,u8 *buf,u8 len);
-	void uart_burst_read(u32 addr,u8 *buf,u8 len);
+	u8 uart_write_reg(u32 addr, u8 value);
+	u8 uart_read_reg(u32 addr,  u8 *pvalue);
+	void i2c_write_reg(u8 addr,u8 val);
+	u8 i2c_read_reg(u8 addr,u8* val);
 
+	void uart_burst_write(u32 addr,u8 *buf,u8 len);
+	void uart_burst_read(u32 addr,u8 *buf,u16 len);
+
+  	#define IMAGE_WIDTH		640
+	#define IMAGE_HEIGHT	16
+	#define BREAD_ONCE		60
+
+   void get_frame_data(void);
 
 #endif

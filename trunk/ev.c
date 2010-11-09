@@ -2,7 +2,7 @@
 #include "type.h"
 #include "ev.h"
 #include "uart.h"
-
+#include "F3xx_USB0_ReportHandler.h"
 //----------------------------------------------------------
 u8				g_ev_event[MAX_EVENT_QUEUE];
 u8 				g_ev_head;
@@ -61,6 +61,8 @@ char event_send(u8 ev_id) reentrant
 	return	0;
 	
 }
+extern unsigned char xdata IN_PACKET[];
+extern u8 g_can_send_data;
 //static unsigned long debug_cnt=0;
 void event_process(void)  
 {
@@ -90,8 +92,6 @@ void event_process(void)
 #endif
 		g_ev_head = (g_ev_head+1)% MAX_EVENT_QUEUE;	  //update header and len		
 		g_ev_len--;		
-
-
 
 		EA =1;
 	}
