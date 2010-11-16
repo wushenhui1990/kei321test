@@ -1,11 +1,11 @@
 #include "uart.h"
 #include "flash_rw.h"
 
-#if 1
+#if 0
 void flash_rw_test(void)
 {
    #define FLASH_WRITE_ADDR		0x3900
-   #define FLASH_WRITE_LEN		0x40
+   #define FLASH_WRITE_LEN		0x02
 
 	unsigned char idata idx;
 	unsigned char idata diff = 0;	
@@ -64,10 +64,10 @@ void test_func(void)
 }
 
 #else
-
+/*
  void test_func(void)
  {
  	return;
  }
-
+*/
 #endif

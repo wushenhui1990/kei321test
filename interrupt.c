@@ -1,6 +1,7 @@
 #include "c8051f320.h"
 #include "ev_timer.h"
 
+#if 0
 unsigned long g_ticks = 0 ;
 
 //according to tool_init.c Timer_Init
@@ -12,3 +13,4 @@ void timer0_isr (void) interrupt 1
    g_ticks++; 
    timer_event_process();
 }
+#endif

@@ -46,8 +46,6 @@
 #include "F3xx_USB0_InterruptServiceRoutine.h"
 #include "F3xx_USB0_Descriptor.h"
 
-
-
 //-----------------------------------------------------------------------------
 // Definitions
 //-----------------------------------------------------------------------------
@@ -60,8 +58,6 @@ extern void Interrupts_Init();
 extern u8 	g_ev_head;
 extern u8 	g_ev_tail;
 extern u8 	g_ev_len;
-
-u8 g_can_send_data = 0;
 
 void Usb_Init(void)
 {
@@ -83,6 +79,7 @@ void Usb_Init(void)
 
 
 #define	TRIG_TIME	1000
+/*
 static void  func_for_debug(void) 
 {
 
@@ -95,13 +92,13 @@ static void  func_for_debug(void)
 
 	return;
 }
-
+*/
 //-----------------------------------------------------------------------------
 // Main Routine
 //-----------------------------------------------------------------------------
 void main(void)
 {
-
+	u32 cnt = 0;
 
 	Init_Device();	  //use code generate by silicon tool.
 
@@ -125,20 +122,26 @@ void main(void)
 
 
 
+
 	report_handler_init();
 
+	while(cnt++<65536);
+	config_sensor();
+//	cnt = 0;
+//   while(cnt++<65536);
 //	test_func();
 
  	Usb_Init();
 	
 	Interrupts_Init();	   //open relative interrupt.
 
+
 	while (1)
 	{
-		//SendPacket (REPORT_ID_IN_IMAGE);		
 		event_process();
-	    if(g_can_send_data==1)
-			get_frame_data();
+		//SendPacket (REPORT_ID_IN_IMAGE);	
+		
+		get_frame_data();	
 	}
 }
 
