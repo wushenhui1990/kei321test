@@ -1,5 +1,7 @@
 #include "PanelPoint.h"
 
+#if 0
+
 #define DEBUG_PM	0
 
 
@@ -1350,3 +1352,4 @@ static void GetPanelPoints(GlobalPara *globalPara,ImagePoint *LeftPoints,unsigne
 	if (*PanelPointNum > 0)
 		TrackSmooth(globalPara,MyPoint,*PanelPointNum);
 }
+#endif

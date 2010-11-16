@@ -127,8 +127,7 @@ void main(void)
 
 	while(cnt++<65536);
 	config_sensor();
-//	cnt = 0;
-//   while(cnt++<65536);
+
 //	test_func();
 
  	Usb_Init();
