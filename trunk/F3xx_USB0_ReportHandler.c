@@ -39,6 +39,8 @@
 #include "uart.h"
 #include "type.h"
 #include "ev.h"
+#include "fpga_define.h"
+#include "INTRINS.H"
 
 
 
@@ -230,8 +232,64 @@ void OUT_BLINK_ENABLE(void)
 }
 */
 
-
+extern u8 cmd_contex_buff[];
 void send_debug_info_to_host(void)
+{
+	bit EAState;
+	unsigned char ControlReg;
+
+	EAState = EA;
+	EA = 0;
+
+	POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
+
+	// Read contol register for EP 1
+	POLL_READ_BYTE (EINCSR1, ControlReg);
+
+	if (EP_STATUS[1] == EP_HALT)        // If endpoint is currently halted,send a stall
+	{
+		POLL_WRITE_BYTE (EINCSR1, rbInSDSTL);
+	}
+
+	else if(EP_STATUS[1] == EP_IDLE)
+	{
+		// the state will be updated inside the ISR handler
+		EP_STATUS[1] = EP_TX;
+
+		if (ControlReg & rbInSTSTL)      // Clear sent stall if last  packet returned a stall
+		{
+			POLL_WRITE_BYTE (EINCSR1, rbInCLRDT);
+		}
+
+		if (ControlReg & rbInUNDRUN)     // Clear underrun bit if it was set
+		{
+			POLL_WRITE_BYTE (EINCSR1, 0x00);
+		}
+
+		// ReportHandler_IN_Foreground (ReportID);
+		IN_PACKET[0] = cmd_contex_buff[0];
+		IN_PACKET[1] = cmd_contex_buff[1];
+		IN_PACKET[2] = cmd_contex_buff[2];
+		IN_PACKET[3] = cmd_contex_buff[3];
+		IN_PACKET[4] = cmd_contex_buff[4];
+		IN_PACKET[5] = cmd_contex_buff[5];
+		IN_PACKET[6] = cmd_contex_buff[6];
+		IN_PACKET[7] = cmd_contex_buff[7];
+
+		IN_BUFFER.Ptr = IN_PACKET;
+		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+		// Put new data on Fifo
+		Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(unsigned char *)IN_BUFFER.Ptr);
+
+		POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
+		// Set In Packet ready bit,
+	}                                   // indicating fresh data on FIFO 1
+
+	EA = EAState;
+
+}
+/*
+void send_debug_info_to_host_1(void)
 {
 	bit EAState;
 	unsigned char ControlReg;
@@ -276,7 +334,53 @@ void send_debug_info_to_host(void)
 	EA = EAState;
 
 }
+*/
+void send_debug_info_to_host_1 (void)
+{
+   bit EAState;
+   unsigned char ControlReg;
 
+   EAState = EA;
+   EA = 0;
+
+   POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
+
+   // Read contol register for EP 1
+    POLL_READ_BYTE (EINCSR1, ControlReg);
+
+   if (EP_STATUS[1] == EP_HALT)        // If endpoint is currently halted,
+                                       // send a stall
+   {
+      POLL_WRITE_BYTE (EINCSR1, rbInSDSTL);
+   }
+
+   else if(EP_STATUS[1] == EP_IDLE)
+   {
+      // the state will be updated inside the ISR handler
+      EP_STATUS[1] = EP_TX;
+
+      if (ControlReg & rbInSTSTL)      // Clear sent stall if last
+                                       // packet returned a stall
+      {
+         POLL_WRITE_BYTE (EINCSR1, rbInCLRDT);
+      }
+
+      if (ControlReg & rbInUNDRUN)     // Clear underrun bit if it was set
+      {
+         POLL_WRITE_BYTE (EINCSR1, 0x00);
+      }
+
+      //ReportHandler_IN_Foreground (ReportID);
+
+      // Put new data on Fifo
+      Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,
+                    (unsigned char *)IN_BUFFER.Ptr);
+      POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
+                                       // Set In Packet ready bit,
+   }                                   // indicating fresh data on FIFO 1
+
+   EA = EAState;
+}
 
 
 // ----------------------------------------------------------------------------
@@ -284,20 +388,15 @@ void send_debug_info_to_host(void)
 // ----------------------------------------------------------------------------
 // This handler saves a blinking pattern sent by the host application.
 //-----------------------------------------------------------------------------
-extern u8 g_can_send_data;
-
+u8 cmd_contex_buff[8];
 void recv_cmd_from_host(void)
 {
 
 	u8 	idata idx,sen_addr,reg_val,ret;
-	u16  reg_addr;
+	u16  reg_addr,cur_idx,cur_len;
+	u8  data flag;
 
 	u8 cmd = OUT_BUFFER.Ptr[1];
-	//u8 len = OUT_BUFFER.Ptr[2];
-
-	//FS(("recv cmd:"));
-	//FB((cmd));
-	//FS(("\n"));
 	
 	if(cmd ==DATA_CMD_WRITE_REG)
 	{
@@ -305,15 +404,12 @@ void recv_cmd_from_host(void)
 		reg_val  =  OUT_BUFFER.Ptr[4];
 		uart_write_reg(reg_addr,reg_val);
 
-
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
-		IN_PACKET[1] = DATA_CMD_WRITE_REG;		//date type
-		IN_PACKET[2] = 0; //err code				//err code
-		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
-		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		
-		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		//val
-		IN_BUFFER.Ptr = IN_PACKET;
-		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
+		cmd_contex_buff[1] = DATA_CMD_WRITE_REG;		//date type
+		cmd_contex_buff[2] = 0; //err code				//err code
+		cmd_contex_buff[3] = OUT_BUFFER.Ptr[2];		//addr
+		cmd_contex_buff[4] = OUT_BUFFER.Ptr[3];		
+		cmd_contex_buff[5] = OUT_BUFFER.Ptr[4];		//val
 
 		event_send(EVENT_ID_RETURN_HOST_CMD);
 
@@ -323,16 +419,13 @@ void recv_cmd_from_host(void)
 		reg_addr = OUT_BUFFER.Ptr[2]|(OUT_BUFFER.Ptr[3]<<8);
 		ret = uart_read_reg(reg_addr,&reg_val);	
 
-
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
-		IN_PACKET[1] = DATA_CMD_READ_REG;		//date type
-		IN_PACKET[2] = ret; 					//err code
-		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
-		IN_PACKET[4] = OUT_BUFFER.Ptr[3];
-		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		//val		
-		IN_PACKET[6] = reg_val;		
-		IN_BUFFER.Ptr = IN_PACKET;
-		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+ 		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
+		cmd_contex_buff[1] = DATA_CMD_READ_REG;		//date type
+		cmd_contex_buff[2] = ret; 					//err code
+		cmd_contex_buff[3] = OUT_BUFFER.Ptr[2];		//addr
+		cmd_contex_buff[4] = OUT_BUFFER.Ptr[3];
+		cmd_contex_buff[5] = OUT_BUFFER.Ptr[4];		//val		
+		cmd_contex_buff[6] = reg_val;		
 
 		event_send(EVENT_ID_RETURN_HOST_CMD);
 
@@ -344,14 +437,11 @@ void recv_cmd_from_host(void)
 		reg_val  = OUT_BUFFER.Ptr[3];
 
 		i2c_write_reg(reg_addr,reg_val);
-
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
-		IN_PACKET[1] = DATA_CMD_I2C_WRITE_REG;	//date type
-		IN_PACKET[2] = 0; 						//err code
-		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
-		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		//val		
-		IN_BUFFER.Ptr = IN_PACKET;
-		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+ 		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
+		cmd_contex_buff[1] = DATA_CMD_I2C_WRITE_REG;	//date type
+		cmd_contex_buff[2] = 0; 						//err code
+		cmd_contex_buff[3] = OUT_BUFFER.Ptr[2];		//addr
+		cmd_contex_buff[4] = OUT_BUFFER.Ptr[3];		//val		
 
 		event_send(EVENT_ID_RETURN_HOST_CMD);
 
@@ -362,14 +452,12 @@ void recv_cmd_from_host(void)
 		//reg_val  = OUT_BUFFER.Ptr[3];
 		ret = i2c_read_reg(reg_addr,&reg_val);
 
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
-		IN_PACKET[1] = DATA_CMD_I2C_READ_REG;	//date type
-		IN_PACKET[2] = ret; 					//err code
-		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
-		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		//val
-		IN_PACKET[5] = reg_val;			
-		IN_BUFFER.Ptr = IN_PACKET;
-		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
+		cmd_contex_buff[1] = DATA_CMD_I2C_READ_REG;	//date type
+		cmd_contex_buff[2] = ret; 					//err code
+		cmd_contex_buff[3] = OUT_BUFFER.Ptr[2];		//addr
+		cmd_contex_buff[4] = OUT_BUFFER.Ptr[3];		//val
+		cmd_contex_buff[5] = reg_val;			
 
 		event_send(EVENT_ID_RETURN_HOST_CMD);
 
@@ -377,24 +465,68 @@ void recv_cmd_from_host(void)
 
 	else if(cmd ==DATA_CMD_CONFIG_SENSOR)
 	{
+
 		for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
 		{
 			sen_addr = 	cmd_config_sensor[idx<<1];
 			reg_val  =  cmd_config_sensor[(idx<<1)+1];
 			i2c_write_reg(sen_addr,reg_val);	
 		}
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
-		IN_PACKET[1] = DATA_CMD_CONFIG_SENSOR;	//date type
-		IN_PACKET[2] = 0; 					//err code
-		IN_BUFFER.Ptr = IN_PACKET;
-		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
-
+		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
+		cmd_contex_buff[1] = DATA_CMD_CONFIG_SENSOR;	//date type
+		cmd_contex_buff[2] = 0; 					//err code
 		event_send(EVENT_ID_RETURN_HOST_CMD);
 
-	   	g_can_send_data = 1;
-	
 
-	}		
+	}
+	else if(cmd ==DATA_CMD_READ_IMAGE)
+	{
+
+	   	cur_idx = OUT_BUFFER.Ptr[2] | (OUT_BUFFER.Ptr[3]<<8);
+		cur_len = OUT_BUFFER.Ptr[4] | ((OUT_BUFFER.Ptr[5]&0x3f)<<8);
+		flag = OUT_BUFFER.Ptr[5]&0xc0;    // start end  x x  x x x x
+
+		if(flag&0x80)	 //start one frame (bit7)
+		{
+			uart_write_reg(PBI_MODE,0x1);
+	 		uart_write_reg(SIF_FRMSTART,0x01);
+			while(1)
+			{
+				uart_read_reg(SIF_FRMSTART,&reg_val);
+				if(reg_val==0) break;
+				_nop_();_nop_();_nop_();_nop_();
+				_nop_();_nop_();_nop_();_nop_();
+				_nop_();_nop_();_nop_();_nop_();
+				_nop_();_nop_();_nop_();_nop_();
+		
+			}
+
+			uart_write_reg(PDMC_VSYNC,0x01);
+		}
+
+
+		uart_burst_read(PDMC_PDATA,&IN_PACKET[4],cur_len);
+
+ 		if(flag&0x40)	   	//end (bit6)
+		{
+			uart_write_reg(PBI_MODE,0x0);
+		}
+
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;
+		IN_PACKET[1] = flag|(DATA_LEFT_IMAGE&0x3f);
+		IN_PACKET[2] = (u8)cur_idx;
+		IN_PACKET[3] = ((cur_idx&0x0300)>>2)|(cur_len&0x3f);
+
+
+		
+		send_debug_info_to_host_1();
+
+
+
+
+		//event_send(EVENT_ID_RETURN_HOST_CMD);
+
+	}				
 
 }
 
@@ -507,6 +639,7 @@ void ReportHandler_IN_ISR(unsigned char R_ID)
    }
 
 }
+
 void ReportHandler_IN_Foreground(unsigned char R_ID)
 {
    unsigned char index;
@@ -561,7 +694,6 @@ void ReportHandler_OUT(unsigned char R_ID){
    }
 }
 
-
 void report_handler_init(void)
 {
  	u8 idata i;
@@ -573,4 +705,5 @@ void report_handler_init(void)
 	}
 
 	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_debug_info_to_host);
+
 }

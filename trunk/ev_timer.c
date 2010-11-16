@@ -1,6 +1,7 @@
 #include "c8051f320.h"
 #include "ev_timer.h"
 
+#if 0
 static timer_event_st		  xdata		g_sys_timer_event;
 
 
@@ -98,3 +99,4 @@ void timer_event_process(void)
 	}
 
 }
+#endif

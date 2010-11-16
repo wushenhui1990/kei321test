@@ -312,8 +312,8 @@ void delay(void)
 {
 	u8 volatile data cnt = 0xff;
 	while(--cnt);
-	cnt = 0xff;
-	while(--cnt);
+	//cnt = 0xff;
+	//while(--cnt);
 }
 u8 uart_write_reg(u32 addr, u8 value)
 {
@@ -351,7 +351,7 @@ u8 uart_read_reg(u32 addr, u8 *pvalue)
 
 	return err;
 }
-
+/*
 void uart_burst_write(u32 addr,u8 *buf,u8 len)
 {
 	u8 bufh[5];
@@ -365,7 +365,7 @@ void uart_burst_write(u32 addr,u8 *buf,u8 len)
 	uart_send(buf,len);
 
 }
-
+ */
 void uart_burst_read(u32 addr,u8 *buf,u16 len)
 {
 	u8 bufh[5];
@@ -381,7 +381,32 @@ void uart_burst_read(u32 addr,u8 *buf,u16 len)
 	uart_send(bufh,5);
 	uart_read(buf,len);
 }
-
+/*
+		else if (!strcmp(command,"i2cwd"))
+		{
+			fscanf(fScript,"%x",&Addr);
+			fscanf(fScript,"%x",&Reg);
+			sprintf(line,"write sensor reg 0x%02x 0x%02x\n",Addr,Reg);
+			dlg->PrintInfo(line);
+			dlg->m_Debug.WriteRegister(0xC405,0x21);
+			dlg->m_Debug.WriteRegister(0xC408,(UCHAR)Addr);
+			dlg->m_Debug.WriteRegister(0xC409,(UCHAR)Reg);
+			dlg->m_Debug.WriteRegister(0xC406,0x14);
+			dlg->m_Debug.WriteRegister(0xC404,0x01);
+		else if (!strcmp(command,"i2crd"))
+		{
+			fscanf(fScript,"%x",&Addr);
+			fscanf(fScript,"%x",&RegComp);
+			sprintf(line,"read sensor reg:0x%02x=",Addr);
+			dlg->PrintInfo(line);
+			dlg->m_Debug.WriteRegister(0xC405,0x21);						//i2c slave address
+			dlg->m_Debug.WriteRegister(0xC408,(UCHAR)Addr);					//sensor reg address
+			dlg->m_Debug.WriteRegister(0xC406,0x12);						//write len 1byte
+			dlg->m_Debug.WriteRegister(0xC404,0x01);						//start write
+			dlg->m_Debug.WriteRegister(0xC406,0x13);						//read len 1byte
+			dlg->m_Debug.WriteRegister(0xC404,0x01);						//start read
+			dlg->m_Debug.ReadRegister(0xC40B,(UCHAR *)&Reg);
+*/
 
 void i2c_write_reg(u8 addr,u8 val)
 {
@@ -414,11 +439,12 @@ u8 i2c_read_reg(u8 addr,u8* val)
 	return ret;
 }
 
-void config_sensor_test(void)
+
+void config_sensor(void)
 {
  
 	u8 idata idx,addr,val;
-	u8 ret;
+	//u8 ret;
 	for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
 	{
 		addr = 	cmd_config_sensor[idx<<1];
@@ -426,7 +452,7 @@ void config_sensor_test(void)
 	
 		i2c_write_reg(addr,val);
 		
-		ret = i2c_read_reg(addr,&val);
+		//ret = i2c_read_reg(addr,&val);
 		_nop_();	
 	}
 
@@ -434,18 +460,21 @@ void config_sensor_test(void)
 
 extern cam_send_img_stat_st cam_status[CAM_COUNT];
 extern unsigned char xdata IN_PACKET[IN_PACKET_LEN];
-
+u8 b_first = 1;
+u32 b_cnt = 0;
 void get_frame_data(void)
 {
 	u16 volatile i ;
 	u8 val = 0;
-
+//	bit eabak;
 	u8 read_cnt,remain;
 
+   	uart_write_reg(PBI_MODE,0x01);
  	uart_write_reg(SIF_FRMSTART,0x01);
 
-	//for(i=0;i<1000;i++)
-	//_nop_();
+  	IN_BUFFER.Ptr = IN_PACKET;	
+	IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN+1;
+
 
 	while(1)
 	{
@@ -463,27 +492,54 @@ void get_frame_data(void)
    	read_cnt = 	(IMAGE_WIDTH*IMAGE_HEIGHT)/BREAD_ONCE;
 	remain   =  (IMAGE_WIDTH*IMAGE_HEIGHT)%BREAD_ONCE;
 
-	IN_PACKET[0] = REPORT_ID_IN_IMAGE;
-	IN_PACKET[1] = cam_status[0].cam_num;
 
 	for(i = 0; i<read_cnt;i++)
 	{
+	//eabak = EA;
+	///	EA = 0;
 		uart_burst_read(PDMC_PDATA,&IN_PACKET[4],BREAD_ONCE);
 
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;
+		IN_PACKET[1] = cam_status[0].cam_num;
+		if(i==0)
+		{
+			IN_PACKET[1] &= ~0xc0;
+			IN_PACKET[1] |= 0x80;
+		}
 		IN_PACKET[2] = cam_status[0].send_cur_idx;
 		IN_PACKET[3] = BREAD_ONCE;
 		cam_status[0].send_cur_idx ++;
 		
-		send_debug_info_to_host();
+		send_debug_info_to_host_1();
+		_nop_();_nop_();_nop_();_nop_();
+		_nop_();_nop_();_nop_();_nop_();
+		_nop_();_nop_();_nop_();_nop_();
+		_nop_();_nop_();_nop_();_nop_();
+
+	//	EA = eabak;
 	}
 	if(remain)
 	{
+	//	eabak = EA;
+	//	EA = 0;
 		uart_burst_read(PDMC_PDATA,&IN_PACKET[4],remain);
+
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;
+		IN_PACKET[1] = cam_status[0].cam_num;
+		IN_PACKET[1] &= ~0xc0;
+		IN_PACKET[1] |= 0x40;
+
 		IN_PACKET[2] = cam_status[0].send_cur_idx;
 		IN_PACKET[3] = remain;
 		cam_status[0].send_cur_idx ++;
 
-		send_debug_info_to_host();
+		send_debug_info_to_host_1();
+		_nop_();_nop_();_nop_();_nop_();
+		_nop_();_nop_();_nop_();_nop_();
+		_nop_();_nop_();_nop_();_nop_();
+		_nop_();_nop_();_nop_();_nop_();
+
+	//	EA = eabak;
 	}
 
 	cam_status[0].send_cur_idx%=cam_status[0].send_tot_cnt;

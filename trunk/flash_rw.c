@@ -1,6 +1,7 @@
 #include "c8051f320.h"
 #include "flash_rw.h"
 
+#if 0
 //
 // This routine writes <byte> to the linear FLASH address <addr>.
 //
@@ -185,4 +186,4 @@ void flash_update (u16 dest, u8 *src, u16 cnt)
 	flash_write (dest, src, cnt);
 }
 
-
+#endif

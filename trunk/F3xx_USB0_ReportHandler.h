@@ -80,6 +80,7 @@ typedef struct{
 	DATA_CMD_I2C_WRITE_REG=4,
 	DATA_CMD_I2C_READ_REG=5,
 	DATA_CMD_CONFIG_SENSOR=10,
+	DATA_CMD_READ_IMAGE = 11,
 	DATA_TYPE_COUNT
 }COM_DATA_TYPE;
 
@@ -92,5 +93,6 @@ extern BufferStructure IN_BUFFER, OUT_BUFFER;
 
 extern void report_handler_init(void);
 void send_debug_info_to_host(void);
+void send_debug_info_to_host_1(void);
 
 #endif

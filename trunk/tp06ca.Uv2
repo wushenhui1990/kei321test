@@ -5,6 +5,7 @@ Target (Target 1), 0x0000 // Tools: 'MCS-51'
 
 Group (Source Group 1)
 Group (usb)
+Group (algorithm)
 
 File 1,2,<.\STARTUP.A51><STARTUP.A51> 0x0 
 File 1,1,<.\uart.c><uart.c> 0x0 
@@ -19,6 +20,7 @@ File 2,1,<.\F3xx_USB0_Descriptor.c><F3xx_USB0_Descriptor.c> 0x0
 File 2,1,<.\F3xx_USB0_InterruptServiceRoutine.c><F3xx_USB0_InterruptServiceRoutine.c> 0x0 
 File 2,1,<.\F3xx_USB0_Main.c><F3xx_USB0_Main.c> 0x0 
 File 2,1,<.\F3xx_USB0_ReportHandler.c><F3xx_USB0_ReportHandler.c> 0x0 
+File 3,1,<.\PanelPoint.c><PanelPoint.c> 0x0 
 
 
 Options 1,0,0  // Target 'Target 1'
@@ -40,10 +42,10 @@ Options 1,0,0  // Target 'Target 1'
  DBC_AMS ()
  DBC_LMS ()
  UseEnv=0
- EnvBin ()
+ EnvBin (D:\Keil\C51\BIN\)
  EnvInc ()
  EnvLib ()
- EnvReg (ÿCygnal\)
+ EnvReg ()
  OrgReg (ÿCygnal\)
  TgStat=16
  OutDir (.\obj\)

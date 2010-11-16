@@ -23,7 +23,7 @@
 	u8 uart_read_reg(u32 addr,  u8 *pvalue);
 	void i2c_write_reg(u8 addr,u8 val);
 	u8 i2c_read_reg(u8 addr,u8* val);
-
+	void config_sensor(void);
 	void uart_burst_write(u32 addr,u8 *buf,u8 len);
 	void uart_burst_read(u32 addr,u8 *buf,u16 len);
 
