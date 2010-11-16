@@ -64,10 +64,10 @@ void test_func(void)
 }
 
 #else
-/*
+
  void test_func(void)
  {
  	return;
  }
-*/
+
 #endif

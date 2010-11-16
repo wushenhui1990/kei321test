@@ -5,7 +5,7 @@
 #include "type.h"
 #include "ev.h"
 //-------------------------------------------------------------
-
+#if(TIMER_EVENT_ENABLE==1)
 typedef struct _timer_ev_unit
 {
     u8 event; 	
@@ -25,5 +25,5 @@ char timer_event_add(timer_ev_unit_st*ev_unit);
 char timer_event_del(u8 ev_id);
 void timer_event_process(void);
 
-
+#endif
 #endif

@@ -73,7 +73,7 @@ void OUT_Report(void);
 
 void send_image_to_host(void);
 //void OUT_BLINK_ENABLE(void);
-void recv_cmd_from_host(void);
+//void recv_cmd_from_host(void);
 //void OUT_BLINK_RATE(void);
 void send_mtouch_to_host(void);
 //void FEATURE_BLINK_DIMMER_INPUT (void);
@@ -89,7 +89,7 @@ void send_mtouch_to_host(void);
 //#define IN_VECTORTABLESize 3
 //#define OUT_VECTORTABLESize 4
 #define IN_VECTORTABLESize 2
-#define OUT_VECTORTABLESize 1
+//#define OUT_VECTORTABLESize 1
 
 // ----------------------------------------------------------------------------
 // Global Constant Declaration
@@ -103,11 +103,11 @@ void send_mtouch_to_host(void);
 const VectorTableEntry IN_VECTORTABLE[IN_VECTORTABLESize] =
 {
    // FORMAT: Report ID, Report Handler
-   REPORT_ID_IN_IMAGE, send_image_to_host,
+   //REPORT_ID_IN_IMAGE, send_image_to_host,
    REPORT_ID_IN_MTOUCH, send_mtouch_to_host,
 //   FEATURE_BLINK_DIMMERID, FEATURE_BLINK_DIMMER_INPUT
 };
-
+/*
 // ****************************************************************************
 // Link all Report Handler functions to corresponding Report IDs
 // ****************************************************************************
@@ -120,7 +120,7 @@ const VectorTableEntry OUT_VECTORTABLE[OUT_VECTORTABLESize] =
  //  FEATURE_BLINK_DIMMERID, FEATURE_BLINK_DIMMER_OUTPUT
 
 };
-
+*/
 
 // ----------------------------------------------------------------------------
 // Global Variable Declaration
@@ -168,6 +168,7 @@ BufferStructure IN_BUFFER, OUT_BUFFER;
 //	id, cam, idx, len, +data
 //
 //-----------------------------------------------------------------------------
+/*
 void send_image_to_host(void)
 {
 	unsigned char idata i;
@@ -192,7 +193,7 @@ void send_image_to_host(void)
 	
 	IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN+1;
 }
-
+*/
 // ----------------------------------------------------------------------------
 // IN_Blink_Stats()
 // ----------------------------------------------------------------------------
@@ -389,14 +390,19 @@ void send_debug_info_to_host_1 (void)
 // This handler saves a blinking pattern sent by the host application.
 //-----------------------------------------------------------------------------
 u8 cmd_contex_buff[8];
-void recv_cmd_from_host(void)
+void recv_cmd_from_host(u8 rid)
 {
 
-	u8 	idata idx,sen_addr,reg_val,ret;
-	u16  reg_addr,cur_idx,cur_len;
-	u8  data flag;
+	u8 	idata idx,sen_addr,reg_val,ret,cmd;
+	u16 idata reg_addr,cur_idx,cur_len;
+	u8  idata flag;
 
-	u8 cmd = OUT_BUFFER.Ptr[1];
+	if(rid!=REPORT_ID_OUT_CMD)
+	{
+		return;
+	}
+
+	cmd = OUT_BUFFER.Ptr[1];
 	
 	if(cmd ==DATA_CMD_WRITE_REG)
 	{
@@ -639,7 +645,7 @@ void ReportHandler_IN_ISR(unsigned char R_ID)
    }
 
 }
-
+/*
 void ReportHandler_IN_Foreground(unsigned char R_ID)
 {
    unsigned char index;
@@ -661,7 +667,7 @@ void ReportHandler_IN_Foreground(unsigned char R_ID)
    }
 
 }
-
+*/
 // ----------------------------------------------------------------------------
 // ReportHandler_OUT
 // ----------------------------------------------------------------------------
@@ -673,6 +679,7 @@ void ReportHandler_IN_Foreground(unsigned char R_ID)
 // to an Output Report Handler.
 //
 // ----------------------------------------------------------------------------
+/*
 void ReportHandler_OUT(unsigned char R_ID){
 
    unsigned char index;
@@ -693,7 +700,7 @@ void ReportHandler_OUT(unsigned char R_ID){
       index++;
    }
 }
-
+*/
 void report_handler_init(void)
 {
  	u8 idata i;

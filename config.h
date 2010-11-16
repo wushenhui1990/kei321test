@@ -2,21 +2,16 @@
 #define __CONFIG_H__
 
 
-#ifndef UART_DEBUG
-#define UART_DEBUG		0
-#endif
 
-#ifndef SYSCLK
-#define SYSCLK          24000000  	// SYSCLK in Hz (12 MHz internal   
-#endif
+#define UART_DEBUG				0
 
-#ifndef MAX_TIMER_EVENT_QUEUE
-#define MAX_TIMER_EVENT_QUEUE	4
-#endif
+#define SYSCLK          		24000000  	// SYSCLK in Hz (12 MHz internal   
 
-#ifndef MAX_EVENT_QUEUE
-#define MAX_EVENT_QUEUE		4
-#endif
+#define MAX_TIMER_EVENT_QUEUE	2
 
+#define MAX_EVENT_QUEUE			4
 
+#define TIMER0_ENABLE			0
+
+#define TIMER_EVENT_ENABLE		0
 #endif
