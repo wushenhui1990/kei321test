@@ -383,6 +383,55 @@ void send_debug_info_to_host_1 (void)
    EA = EAState;
 }
 
+void send_mtouch_to_host_1 (void)
+{
+   bit EAState;
+   unsigned char ControlReg;
+
+   EAState = EA;
+   EA = 0;
+
+   POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
+
+   // Read contol register for EP 1
+    POLL_READ_BYTE (EINCSR1, ControlReg);
+
+   if (EP_STATUS[1] == EP_HALT)        // If endpoint is currently halted,
+                                       // send a stall
+   {
+      POLL_WRITE_BYTE (EINCSR1, rbInSDSTL);
+   }
+
+   else if(EP_STATUS[1] == EP_IDLE)
+   {
+      // the state will be updated inside the ISR handler
+      EP_STATUS[1] = EP_TX;
+
+      if (ControlReg & rbInSTSTL)      // Clear sent stall if last
+                                       // packet returned a stall
+      {
+         POLL_WRITE_BYTE (EINCSR1, rbInCLRDT);
+      }
+
+      if (ControlReg & rbInUNDRUN)     // Clear underrun bit if it was set
+      {
+         POLL_WRITE_BYTE (EINCSR1, 0x00);
+      }
+
+      //ReportHandler_IN_Foreground (ReportID);
+
+      // Put new data on Fifo
+	    IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
+   		IN_BUFFER.Ptr = IN_PACKET;
+   		IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
+
+      Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(unsigned char *)IN_BUFFER.Ptr);
+      POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
+                                       // Set In Packet ready bit,
+   }                                   // indicating fresh data on FIFO 1
+
+   EA = EAState;
+}
 
 // ----------------------------------------------------------------------------
 // recv_cmd_from_host()
