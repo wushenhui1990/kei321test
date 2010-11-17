@@ -510,7 +510,7 @@ void get_frame_data(void)
 		IN_PACKET[3] = BREAD_ONCE;
 		cam_status[0].send_cur_idx ++;
 		
-		send_debug_info_to_host_1();
+		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
 		_nop_();_nop_();_nop_();_nop_();
 		_nop_();_nop_();_nop_();_nop_();
 		_nop_();_nop_();_nop_();_nop_();
@@ -533,7 +533,7 @@ void get_frame_data(void)
 		IN_PACKET[3] = remain;
 		cam_status[0].send_cur_idx ++;
 
-		send_debug_info_to_host_1();
+		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
 		_nop_();_nop_();_nop_();_nop_();
 		_nop_();_nop_();_nop_();_nop_();
 		_nop_();_nop_();_nop_();_nop_();

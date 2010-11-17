@@ -70,6 +70,8 @@ char FillHidPacket(PanelPoint *MyPoint,u8 PointNum)
 	char i = 0;
 	char flag = 0;
 
+	IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
+
 	if (PointNum >= g_backup_ptnum)
 	{
 		IN_PACKET[13] = PointNum;
