@@ -382,8 +382,8 @@ void Handle_Control (void)
          // ID, which is the first by the of DATAPTR's buffer
          if ( (EP_STATUS[0] == EP_IDLE) && (SETUP.bRequest == SET_REPORT) )
          {
-            //ReportHandler_OUT (*DATAPTR);
-			recv_cmd_from_host(*DATAPTR);
+            ReportHandler_OUT (*DATAPTR);
+			//recv_cmd_from_host(*DATAPTR);
          }
 
          if (EP_STATUS[0] != EP_STALL) POLL_WRITE_BYTE (E0CSR, ControlReg);
@@ -445,8 +445,8 @@ void Handle_Out1 ()
       // the host will still format OUT packets with a prefix byte
       // of '0x00'.
 
-      //ReportHandler_OUT (OUT_BUFFER.Ptr[0]);
-	   recv_cmd_from_host (OUT_BUFFER.Ptr[0]);
+      ReportHandler_OUT (OUT_BUFFER.Ptr[0]);
+	  // recv_cmd_from_host (OUT_BUFFER.Ptr[0]);
 	  
       POLL_WRITE_BYTE (EOUTCSR1, 0);   // Clear Out Packet ready bit
    }

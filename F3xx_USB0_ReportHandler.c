@@ -54,6 +54,7 @@ unsigned char xdata cur_cam_idx ;
 
 cam_send_img_stat_st cam_status[CAM_COUNT];
 
+u8 cmd_contex_buff[8];
 
 extern u8 code cmd_config_sensor[];
 extern u8 code cmd_config_sensor_cnt;
@@ -75,7 +76,7 @@ void send_image_to_host(void);
 //void OUT_BLINK_ENABLE(void);
 //void recv_cmd_from_host(void);
 //void OUT_BLINK_RATE(void);
-void send_mtouch_to_host(void);
+//void send_mtouch_to_host(void);
 //void FEATURE_BLINK_DIMMER_INPUT (void);
 //void FEATURE_BLINK_DIMMER_OUTPUT (void);
 // ----------------------------------------------------------------------------
@@ -88,7 +89,7 @@ void send_mtouch_to_host(void);
 
 //#define IN_VECTORTABLESize 3
 //#define OUT_VECTORTABLESize 4
-#define IN_VECTORTABLESize 2
+//#define IN_VECTORTABLESize 2
 //#define OUT_VECTORTABLESize 1
 
 // ----------------------------------------------------------------------------
@@ -100,13 +101,13 @@ void send_mtouch_to_host(void);
 // Link all Report Handler functions to corresponding Report IDs
 // ****************************************************************************
 
-const VectorTableEntry IN_VECTORTABLE[IN_VECTORTABLESize] =
-{
-   // FORMAT: Report ID, Report Handler
-   //REPORT_ID_IN_IMAGE, send_image_to_host,
-   REPORT_ID_IN_MTOUCH, send_mtouch_to_host,
-//   FEATURE_BLINK_DIMMERID, FEATURE_BLINK_DIMMER_INPUT
-};
+//const VectorTableEntry IN_VECTORTABLE[IN_VECTORTABLESize] =
+//{
+//   // FORMAT: Report ID, Report Handler
+//   //REPORT_ID_IN_IMAGE, send_image_to_host,
+//   REPORT_ID_IN_MTOUCH, send_mtouch_to_host,
+////   FEATURE_BLINK_DIMMERID, FEATURE_BLINK_DIMMER_INPUT
+//};
 /*
 // ****************************************************************************
 // Link all Report Handler functions to corresponding Report IDs
@@ -200,13 +201,13 @@ void send_image_to_host(void)
 // This routine sends statistics calculated in Blink_Control_...c to
 // the host application.
 //-----------------------------------------------------------------------------
-void send_mtouch_to_host(void)
-{
-   IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
-
-   IN_BUFFER.Ptr = IN_PACKET;
-   IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
-}
+//void send_mtouch_to_host(void)
+//{
+//   IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
+//
+//   IN_BUFFER.Ptr = IN_PACKET;
+//   IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
+//}
 
 
 // ****************************************************************************
@@ -434,12 +435,12 @@ void send_mtouch_to_host_1 (void)
 }
 
 // ----------------------------------------------------------------------------
-// recv_cmd_from_host()
+// ReportHandler_OUT()
 // ----------------------------------------------------------------------------
 // This handler saves a blinking pattern sent by the host application.
 //-----------------------------------------------------------------------------
-u8 cmd_contex_buff[8];
-void recv_cmd_from_host(u8 rid)
+
+void ReportHandler_OUT(u8 rid)
 {
 
 	u8 	idata idx,sen_addr,reg_val,ret,cmd;
@@ -483,7 +484,6 @@ void recv_cmd_from_host(u8 rid)
 		cmd_contex_buff[6] = reg_val;		
 
 		event_send(EVENT_ID_RETURN_HOST_CMD);
-
 
 	}
 	else if(cmd ==DATA_CMD_I2C_WRITE_REG)
@@ -675,6 +675,18 @@ void Setup_OUT_BUFFER(void)
 // ----------------------------------------------------------------------------
 void ReportHandler_IN_ISR(unsigned char R_ID)
 {
+	if(R_ID==REPORT_ID_IN_MTOUCH)
+	{
+	   IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
+	
+	   IN_BUFFER.Ptr = IN_PACKET;
+	   IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
+	}
+}
+
+/*
+void ReportHandler_IN_ISR(unsigned char R_ID)
+{
    unsigned char index;
 
    index = 0;
@@ -693,7 +705,7 @@ void ReportHandler_IN_ISR(unsigned char R_ID)
       index++;
    }
 
-}
+}*/
 /*
 void ReportHandler_IN_Foreground(unsigned char R_ID)
 {
@@ -763,3 +775,5 @@ void report_handler_init(void)
 	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_debug_info_to_host);
 
 }
+
+
