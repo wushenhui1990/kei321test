@@ -125,8 +125,8 @@ void main(void)
 
 	report_handler_init();
 
-	while(cnt++<65536);
-	config_sensor();
+//	while(cnt++<65536);
+//	config_sensor();
 
 //	test_func();
 
@@ -140,7 +140,7 @@ void main(void)
 		event_process();
 		//SendPacket (REPORT_ID_IN_IMAGE);	
 		
-		get_frame_data();	
+	//	get_frame_data();	
 	}
 }
 
