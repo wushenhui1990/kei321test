@@ -38,6 +38,7 @@
 #include "bitop.h"
 #include "ev.h"
 #include "ev_timer.h"
+#include "test.h"
 
 
 #include "c8051f3xx.h"
@@ -96,6 +97,9 @@ static void  func_for_debug(void)
 //-----------------------------------------------------------------------------
 // Main Routine
 //-----------------------------------------------------------------------------
+
+PanelPoint g_panel_point;
+extern void send_mtouch_to_host_1 (void);
 void main(void)
 {
 	u32 cnt = 0;
@@ -134,13 +138,25 @@ void main(void)
 	
 	Interrupts_Init();	   //open relative interrupt.
 
+   	g_panel_point.id = 0;
+ 	g_panel_point.x  = 0;
+	g_panel_point.y  = 0;
 
 	while (1)
 	{
-		event_process();
-		//SendPacket (REPORT_ID_IN_IMAGE);	
-		
-	//	get_frame_data();	
+		event_process();		
+	//	get_frame_data();
+
+		if(((cnt++%10000)==0)&&(cnt))
+		{
+		 	g_panel_point.x +=200;
+			g_panel_point.y +=100;
+
+			g_panel_point.x %= 1600;
+			g_panel_point.y %= 900;
+			FillHidPacket(&g_panel_point,1); 
+			send_mtouch_to_host_1();	
+		}
 	}
 }
 
