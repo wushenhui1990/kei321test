@@ -87,7 +87,7 @@ typedef struct{
 
 extern void ReportHandler_IN_ISR(unsigned char);
 extern void ReportHandler_IN_Foreground(unsigned char);
-//extern void ReportHandler_OUT(unsigned char);
+extern void ReportHandler_OUT(unsigned char);
 extern void Setup_OUT_BUFFER(void);
 
 extern BufferStructure IN_BUFFER, OUT_BUFFER;
@@ -95,6 +95,6 @@ extern BufferStructure IN_BUFFER, OUT_BUFFER;
 extern void report_handler_init(void);
 void send_debug_info_to_host(void);
 void send_debug_info_to_host_1(void);
-void recv_cmd_from_host(u8 rid);
+//void recv_cmd_from_host(u8 rid);
 
 #endif
