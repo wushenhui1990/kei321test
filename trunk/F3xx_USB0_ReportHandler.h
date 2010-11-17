@@ -93,8 +93,8 @@ extern void Setup_OUT_BUFFER(void);
 extern BufferStructure IN_BUFFER, OUT_BUFFER;
 
 extern void report_handler_init(void);
-void send_debug_info_to_host(void);
-void send_debug_info_to_host_1(void);
+void send_debug_info_to_host(u8 rid);
+//void send_debug_info_to_host_1(void);
 //void recv_cmd_from_host(u8 rid);
 
 #endif

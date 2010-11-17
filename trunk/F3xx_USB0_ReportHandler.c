@@ -48,13 +48,13 @@
 #define  OUT_PACKET_LEN		16
 #define  IN_PACKET_LEN		64
 
-unsigned char xdata OUT_PACKET[OUT_PACKET_LEN];// = {0,0,0,0,0,0,0,0,0};
-unsigned char xdata IN_PACKET[IN_PACKET_LEN];//  = {0,0,0};
+unsigned char xdata OUT_PACKET[OUT_PACKET_LEN];	// = {0,0,0,0,0,0,0,0,0};
+unsigned char xdata IN_PACKET[IN_PACKET_LEN];	//  = {0,0,0};
 unsigned char xdata cur_cam_idx ;
 
 cam_send_img_stat_st cam_status[CAM_COUNT];
 
-u8 cmd_contex_buff[8];
+//u8 IN_PACKET[8];
 
 extern u8 code cmd_config_sensor[];
 extern u8 code cmd_config_sensor_cnt;
@@ -72,7 +72,7 @@ extern void Fifo_Write_Foreground (unsigned char addr, unsigned int uNumBytes, u
 void IN_Report(void);
 void OUT_Report(void);
 
-void send_image_to_host(void);
+//void send_image_to_host(void);
 //void OUT_BLINK_ENABLE(void);
 //void recv_cmd_from_host(void);
 //void OUT_BLINK_RATE(void);
@@ -234,8 +234,9 @@ void OUT_BLINK_ENABLE(void)
 }
 */
 
-extern u8 cmd_contex_buff[];
-void send_debug_info_to_host(void)
+extern u8 IN_PACKET[];
+
+void send_debug_info_to_host(u8 rid)
 {
 	bit EAState;
 	unsigned char ControlReg;
@@ -269,17 +270,17 @@ void send_debug_info_to_host(void)
 		}
 
 		// ReportHandler_IN_Foreground (ReportID);
-		IN_PACKET[0] = cmd_contex_buff[0];
-		IN_PACKET[1] = cmd_contex_buff[1];
-		IN_PACKET[2] = cmd_contex_buff[2];
-		IN_PACKET[3] = cmd_contex_buff[3];
-		IN_PACKET[4] = cmd_contex_buff[4];
-		IN_PACKET[5] = cmd_contex_buff[5];
-		IN_PACKET[6] = cmd_contex_buff[6];
-		IN_PACKET[7] = cmd_contex_buff[7];
 
-		IN_BUFFER.Ptr = IN_PACKET;
-		IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+		if(rid == REPORT_ID_IN_IMAGE)
+		{
+			IN_BUFFER.Ptr = IN_PACKET;
+			IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+		}
+		else if(rid == REPORT_ID_IN_MTOUCH)
+		{
+	   		IN_BUFFER.Ptr = IN_PACKET;
+			IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
+		}
 		// Put new data on Fifo
 		Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(unsigned char *)IN_BUFFER.Ptr);
 
@@ -337,6 +338,7 @@ void send_debug_info_to_host_1(void)
 
 }
 */
+/*
 void send_debug_info_to_host_1 (void)
 {
    bit EAState;
@@ -383,7 +385,8 @@ void send_debug_info_to_host_1 (void)
 
    EA = EAState;
 }
-
+ */
+ /*
 void send_mtouch_to_host_1 (void)
 {
    bit EAState;
@@ -433,7 +436,7 @@ void send_mtouch_to_host_1 (void)
 
    EA = EAState;
 }
-
+*/
 // ----------------------------------------------------------------------------
 // ReportHandler_OUT()
 // ----------------------------------------------------------------------------
@@ -460,14 +463,15 @@ void ReportHandler_OUT(u8 rid)
 		reg_val  =  OUT_BUFFER.Ptr[4];
 		uart_write_reg(reg_addr,reg_val);
 
-		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
-		cmd_contex_buff[1] = DATA_CMD_WRITE_REG;		//date type
-		cmd_contex_buff[2] = 0; //err code				//err code
-		cmd_contex_buff[3] = OUT_BUFFER.Ptr[2];		//addr
-		cmd_contex_buff[4] = OUT_BUFFER.Ptr[3];		
-		cmd_contex_buff[5] = OUT_BUFFER.Ptr[4];		//val
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_WRITE_REG;		//date type
+		IN_PACKET[2] = 0; //err code				//err code
+		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
+		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		
+		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		//val
 
-		event_send(EVENT_ID_RETURN_HOST_CMD);
+		//event_send(EVENT_ID_RETURN_HOST_CMD);
+		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
 
 	}
 	else if(cmd ==DATA_CMD_READ_REG)
@@ -475,16 +479,16 @@ void ReportHandler_OUT(u8 rid)
 		reg_addr = OUT_BUFFER.Ptr[2]|(OUT_BUFFER.Ptr[3]<<8);
 		ret = uart_read_reg(reg_addr,&reg_val);	
 
- 		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
-		cmd_contex_buff[1] = DATA_CMD_READ_REG;		//date type
-		cmd_contex_buff[2] = ret; 					//err code
-		cmd_contex_buff[3] = OUT_BUFFER.Ptr[2];		//addr
-		cmd_contex_buff[4] = OUT_BUFFER.Ptr[3];
-		cmd_contex_buff[5] = OUT_BUFFER.Ptr[4];		//val		
-		cmd_contex_buff[6] = reg_val;		
+ 		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_READ_REG;		//date type
+		IN_PACKET[2] = ret; 					//err code
+		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
+		IN_PACKET[4] = OUT_BUFFER.Ptr[3];
+		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		//val		
+		IN_PACKET[6] = reg_val;		
 
-		event_send(EVENT_ID_RETURN_HOST_CMD);
-
+		//event_send(EVENT_ID_RETURN_HOST_CMD);
+		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
 	}
 	else if(cmd ==DATA_CMD_I2C_WRITE_REG)
 	{
@@ -492,13 +496,14 @@ void ReportHandler_OUT(u8 rid)
 		reg_val  = OUT_BUFFER.Ptr[3];
 
 		i2c_write_reg(reg_addr,reg_val);
- 		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
-		cmd_contex_buff[1] = DATA_CMD_I2C_WRITE_REG;	//date type
-		cmd_contex_buff[2] = 0; 						//err code
-		cmd_contex_buff[3] = OUT_BUFFER.Ptr[2];		//addr
-		cmd_contex_buff[4] = OUT_BUFFER.Ptr[3];		//val		
+ 		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_I2C_WRITE_REG;	//date type
+		IN_PACKET[2] = 0; 						//err code
+		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
+		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		//val		
 
-		event_send(EVENT_ID_RETURN_HOST_CMD);
+		//event_send(EVENT_ID_RETURN_HOST_CMD);
+		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
 
 	}
 	else if(cmd ==DATA_CMD_I2C_READ_REG)
@@ -507,14 +512,15 @@ void ReportHandler_OUT(u8 rid)
 		//reg_val  = OUT_BUFFER.Ptr[3];
 		ret = i2c_read_reg(reg_addr,&reg_val);
 
-		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
-		cmd_contex_buff[1] = DATA_CMD_I2C_READ_REG;	//date type
-		cmd_contex_buff[2] = ret; 					//err code
-		cmd_contex_buff[3] = OUT_BUFFER.Ptr[2];		//addr
-		cmd_contex_buff[4] = OUT_BUFFER.Ptr[3];		//val
-		cmd_contex_buff[5] = reg_val;			
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_I2C_READ_REG;	//date type
+		IN_PACKET[2] = ret; 					//err code
+		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
+		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		//val
+		IN_PACKET[5] = reg_val;			
 
-		event_send(EVENT_ID_RETURN_HOST_CMD);
+	//	event_send(EVENT_ID_RETURN_HOST_CMD);
+		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
 
 	}
 
@@ -527,10 +533,11 @@ void ReportHandler_OUT(u8 rid)
 			reg_val  =  cmd_config_sensor[(idx<<1)+1];
 			i2c_write_reg(sen_addr,reg_val);	
 		}
-		cmd_contex_buff[0] = REPORT_ID_IN_IMAGE;		//report id
-		cmd_contex_buff[1] = DATA_CMD_CONFIG_SENSOR;	//date type
-		cmd_contex_buff[2] = 0; 					//err code
-		event_send(EVENT_ID_RETURN_HOST_CMD);
+		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[1] = DATA_CMD_CONFIG_SENSOR;	//date type
+		IN_PACKET[2] = 0; 					//err code
+//		event_send(EVENT_ID_RETURN_HOST_CMD);
+		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
 
 
 	}
@@ -574,7 +581,7 @@ void ReportHandler_OUT(u8 rid)
 
 
 		
-		send_debug_info_to_host_1();
+		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
 
 
 
@@ -772,7 +779,7 @@ void report_handler_init(void)
 		cam_status[i].send_tot_cnt = (IMAGE_WIDTH*IMAGE_HEIGHT+(BREAD_ONCE>>1))/BREAD_ONCE;
 	}
 
-	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_debug_info_to_host);
+	//event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_debug_info_to_host);
 
 }
 
