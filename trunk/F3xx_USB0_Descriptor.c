@@ -174,7 +174,7 @@ unsigned char code HID_report_desc[] =
 //	0x95, 0x76, 						//	  REPORT_COUNT (1)
 //	0x81, 0x03,                         //       INPUT (Cnst,Ary,Abs)
 
-	0x85, 0x33,				//    Feature report ID
+	0x85, REPORT_ID_IN_FEATURE,				//    Feature report ID
 //    0x05, 0x0d,                         //    USAGE_PAGE (Digitizers)
 //    0x09, 0x54,                         //    USAGE (Contact Count)
 //    0x95, 0x01,                         //    REPORT_COUNT (1)

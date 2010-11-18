@@ -688,6 +688,14 @@ void ReportHandler_IN_ISR(unsigned char R_ID)
 	
 	   IN_BUFFER.Ptr = IN_PACKET;
 	   IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
+	}	
+	else if(R_ID == REPORT_ID_IN_FEATURE)//future
+	{
+		IN_PACKET[0] = R_ID;
+		IN_PACKET[1] = 2;
+		IN_BUFFER.Ptr = IN_PACKET;
+		IN_BUFFER.Length = 2;
+	
 	}
 }
 

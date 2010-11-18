@@ -33,9 +33,10 @@
 
 #include "type.h"
 
-#define REPORT_ID_OUT_CMD     0x01
-#define REPORT_ID_IN_IMAGE    0x04
-#define REPORT_ID_IN_MTOUCH   0x05
+#define REPORT_ID_IN_MTOUCH   	0x01
+#define REPORT_ID_IN_IMAGE    	0x02
+#define REPORT_ID_OUT_CMD     	0x03
+#define REPORT_ID_IN_FEATURE	0x04
 
 // ----------------------------------------------------------------------------
 // Report Sizes (in bytes)
