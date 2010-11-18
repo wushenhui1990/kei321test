@@ -147,16 +147,16 @@ void main(void)
 		event_process();		
 	//	get_frame_data();
 
-		if(((cnt++%10000)==0)&&(cnt))
-		{
-		 	g_panel_point.x +=200;
-			g_panel_point.y +=100;
+	//	if(((cnt++%10000)==0)&&(cnt))
+	//	{
+	//	 	g_panel_point.x +=200;
+	//		g_panel_point.y +=100;
 
-			g_panel_point.x %= 1600;
-			g_panel_point.y %= 900;
-			FillHidPacket(&g_panel_point,1); 
-			send_debug_info_to_host(REPORT_ID_IN_MTOUCH);	
-		}
+	//		g_panel_point.x %= 1600;
+	//		g_panel_point.y %= 900;
+	//		FillHidPacket(&g_panel_point,1); 
+	//		send_debug_info_to_host(REPORT_ID_IN_MTOUCH);	
+	//	}
 	}
 
 }
