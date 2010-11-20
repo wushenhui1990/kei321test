@@ -16,6 +16,7 @@
 #define HID_Blinky_PID 0x82CD
 
 
+#define SCALE_Y		2
 
 
 
@@ -128,9 +129,10 @@ LRESULT CTPA06CA_AdjusterDlg:: OnMainWindowFlush(WPARAM wParam,LPARAM lParam)
 
 CWinThread* p_thread_main_work = NULL;
 CWinThread* p_RunScriptThread = NULL;
-CWinThread* p_thread_preview =NULL;
+CWinThread* p_thread_recv_report =NULL;
 CEvent g_event_reg_rdwr(TRUE,FALSE,0,0);
 CEvent g_event_config_sensor_success(FALSE,FALSE,0,0);
+CEvent g_event_recv_report_end(FALSE,FALSE,0,0);
 
 unsigned char g_cmd_buff[32] ;
 
@@ -432,10 +434,10 @@ void CTPA06CA_AdjusterDlg::HIDcallback (BYTE* reportbuffer)
 	unsigned char flag ;
 	unsigned char sn_num = 0;
 	unsigned char len = 0;
-	int addr,val;
-	int retval;
-	char err;
-	char str[64];
+	//int addr,val;
+	//int retval;
+	//char err;
+	//char str[64];
 	// check report ID and determine
 	switch(reportbuffer[0])
 	{
@@ -617,6 +619,42 @@ void CTPA06CA_AdjusterDlg::HIDcallback (BYTE* reportbuffer)
 	}			
 
 }
+unsigned int receive_report_thread(void *param)
+{
+	CTPA06CA_AdjusterDlg* dlg;
+	dlg = (CTPA06CA_AdjusterDlg*)param;
+	BYTE reportbuffer[256];
+	DWORD status,ret;
+	DWORD cnt = 0;
+
+
+	WaitForSingleObject(g_event_config_sensor_success.m_hObject,INFINITE);
+
+	while (1)
+	{
+
+		ret = WaitForSingleObject(g_event_recv_report_end.m_hObject,0);
+		if(ret == WAIT_OBJECT_0)
+		{
+			TRACE("receive_report_thread exit\n");
+			break;
+		}
+		
+		status = dlg->HID_InterruptGetReport (reportbuffer);
+		if (status == HID_DEVICE_SUCCESS)
+		{
+			dlg->HIDcallback (reportbuffer);
+		}
+
+		TRACE("cnt: %d \n",cnt++);
+		//Sleep(100);
+
+	}
+
+	return 1;
+}
+
+
 //------------------------------------------------------------------------------------
 // run script thread
 //------------------------------------------------------------------------------------
@@ -874,6 +912,9 @@ BOOL CTPA06CA_AdjusterDlg::OnInitDialog()
 	m_RegValue = "0x";
 
 
+	GetDlgItem(IDC_STATIC_PREVIEW2)->MoveWindow(15,400,VIDEO_WIDTH,VIDEO_HEIGHT*SCALE_Y,1);
+	GetDlgItem(IDC_STATIC_PREVIEW1)->MoveWindow(15,450,VIDEO_WIDTH,VIDEO_HEIGHT*SCALE_Y,1);
+
 	if(fdebug == NULL)
 	fdebug = fopen("f:\\test.hex","wb");
 	//-------------------------------------------------------------------------
@@ -930,11 +971,13 @@ BOOL CTPA06CA_AdjusterDlg::OnInitDialog()
 	//m_pYdata = (unsigned char*)calloc(VIDEO_WIDTH*VIDEO_HEIGHT,1);
 
 	//-------------------------------------------------------------------------
-	p_thread_main_work = AfxBeginThread(main_work_thread,this,0,0,0,0);
 
 	OpenUsb();
 	RegisterNotification();
 
+	p_thread_main_work = AfxBeginThread(main_work_thread,this,0,0,0,0);
+
+	p_thread_recv_report = AfxBeginThread(receive_report_thread,this,0,0,0,0);
 
 	UpdateData(FALSE);
 
@@ -997,6 +1040,7 @@ DWORD CTPA06CA_AdjusterDlg::HID_InterruptGetReport (BYTE* reportbuffer)
 	return HID_Blinky.GetInputReport_Interrupt(reportbuffer,
 		HID_Blinky.GetInputReportBufferLength(),1,&results);
 }
+/*
 static DWORD WINAPI InterruptThreadProc(LPVOID lpParameter)
 {
 	CTPA06CA_AdjusterDlg* dlg;
@@ -1011,7 +1055,7 @@ static DWORD WINAPI InterruptThreadProc(LPVOID lpParameter)
 
 	while (dlg->RXthreadmaycontinue == TRUE)
 	{
-		/*
+		
 		// Attempt to retrieve a report
 		status = dlg->HID_InterruptGetReport (reportbuffer);
 		// If a report has been recieved, call the callback routine
@@ -1021,14 +1065,14 @@ static DWORD WINAPI InterruptThreadProc(LPVOID lpParameter)
 			dlg->HIDcallback (reportbuffer);
 			//dlg->UpdateData(FALSE);
 		}
-		*/
+		
 		Sleep(5000);
 
 	}
 
 	return 1;
 }
-
+*/
 void CTPA06CA_AdjusterDlg::OpenUsb()
 {
 		DWORD results;
@@ -1054,7 +1098,7 @@ void CTPA06CA_AdjusterDlg::OpenUsb()
 				HID_Blinky.SetTimeouts (1000,1000);
 
 				// Create thread that polls for INTERRUPT IN reports
-				HID_RX_THREAD = CreateThread (NULL,NULL,InterruptThreadProc,this,0,0);
+				//HID_RX_THREAD = CreateThread (NULL,NULL,InterruptThreadProc,this,0,0);
 
 				GetDlgItem(IDC_BUTTON_TESTCMD)->SetWindowText(_T("Disconnect"));
 				PrintInfo("Open USB OK\n");
@@ -1071,8 +1115,8 @@ void CTPA06CA_AdjusterDlg::CloseUsb()
 		if (HID_Blinky.Close() == HID_DEVICE_SUCCESS)
 		{
 			// Terminate the receive reports thread
-			RXthreadmaycontinue = FALSE;
-			TerminateThread (HID_RX_THREAD, NULL);
+			//RXthreadmaycontinue = FALSE;
+			//TerminateThread (HID_RX_THREAD, NULL);
 
 			// Update "Device Status" text box
 			GetDlgItem(IDC_BUTTON_TESTCMD)->SetWindowText(_T("Connect"));
@@ -1507,11 +1551,18 @@ void CTPA06CA_AdjusterDlg::OnBnClickedButtonPreview()
 //------------------------------------------------------------------------------------------------
 // video display message
 //------------------------------------------------------------------------------------------------
+
+unsigned char *m_scale_data_0 = NULL;
+unsigned char *m_scale_data_1 = NULL;
+
+
 LRESULT CTPA06CA_AdjusterDlg::OnShowVideo(WPARAM wParam,LPARAM lParam)
 {
 	
 	unsigned char lrflag = (unsigned char)wParam;
 //	FINGER_INFO *pfingerinfo = (FINGER_INFO*)lParam;
+	int w = 0;
+	int h = 0;
 	int i = 0;
 
 	m_BmpInfo->bmiHeader.biBitCount = 8;			//gray
@@ -1549,6 +1600,37 @@ LRESULT CTPA06CA_AdjusterDlg::OnShowVideo(WPARAM wParam,LPARAM lParam)
 //	}
 //	else if (0x2==lrflag)
 //	{
+		if(SCALE_Y>1)
+		{
+			if(m_scale_data_0 == NULL)
+			{
+				m_scale_data_0 = (unsigned char*)calloc(1,VIDEO_WIDTH*VIDEO_HEIGHT*SCALE_Y);
+				if(m_scale_data_0 ==NULL)
+				{
+					TRACE("alloc for scale data0 err\n");
+					return 1;
+				}
+			}
+
+			for(h =0;h<VIDEO_HEIGHT;h++)
+			{
+				for(w = 0;w<VIDEO_WIDTH;w++)
+				{
+					for(i = 0;i<SCALE_Y;i++)
+						m_scale_data_0[w+(h+i)*VIDEO_WIDTH] = m_pYdata[w+(h+i)*VIDEO_WIDTH];
+
+				}
+			}
+
+		StretchDIBits(m_pCDCpreview2->m_hDC,0,0,VIDEO_WIDTH,VIDEO_HEIGHT*SCALE_Y,
+		0,0,VIDEO_WIDTH,VIDEO_HEIGHT,
+		m_scale_data_0,
+		m_BmpInfo,
+		DIB_RGB_COLORS,
+		SRCCOPY); 
+
+		}
+		else
 		StretchDIBits(m_pCDCpreview2->m_hDC,0,0,VIDEO_WIDTH,VIDEO_HEIGHT,
 		0,0,VIDEO_WIDTH,VIDEO_HEIGHT,
 		m_pYdata,
@@ -1586,12 +1668,25 @@ void CTPA06CA_AdjusterDlg::OnDestroy()
 		TRACE("wait p_thread_main_work failed\n");
 	}
 
+	g_event_recv_report_end.SetEvent();
+	ret= WaitForSingleObject(p_thread_recv_report->m_hThread,1000);
+	if(ret != WAIT_OBJECT_0)
+	{			
+		TRACE("wait p_thread_recv_report failed\n");
+	}
+
 	CloseUsb();
 
 	if(m_pYdata)
 	{
 		free(m_pYdata);
 		m_pYdata = NULL;
+	}
+	if(m_scale_data_0)
+	{
+		free(m_scale_data_0);
+		m_scale_data_0 = NULL;
+
 	}
 	if(hloc1)
 	{
