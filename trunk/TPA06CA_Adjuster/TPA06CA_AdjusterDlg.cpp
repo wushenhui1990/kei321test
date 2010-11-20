@@ -408,7 +408,7 @@ unsigned int main_work_thread(void *param)
 					::PostMessage(pthis->m_hWnd,WM_MAIN_WINDOW_FLUSH_MSG,0,0);
 					g_event_reg_rdwr.SetEvent();
 	
-					pthis->ResumeThread(HID_RX_THREAD);
+					//pthis->ResumeThread(HID_RX_THREAD);
 					break;
 				}
 			case MSG_MAIN_WORK_EXIT:
@@ -1492,7 +1492,7 @@ void CTPA06CA_AdjusterDlg::OnBnClickedButtonPreview()
 
 		//g_cmd_buff[0] = WORK_STYLE_PREVIEW;
 		//g_cmd_buff[0] = 0;
-		SuspendThread(HID_RX_THREAD);
+		//SuspendThread(HID_RX_THREAD);
 		ret1 = PostThreadMessage(p_thread_main_work->m_nThreadID,MSG_SWITCH_WORK_STYLE,(WPARAM)g_cmd_buff,0);//post thread msg
 		if(ret1 == FALSE)
 			PrintInfo("send message:config_sensor err\n");
