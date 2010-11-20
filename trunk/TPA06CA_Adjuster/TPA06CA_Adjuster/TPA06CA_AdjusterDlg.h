@@ -46,7 +46,7 @@ public:
 	CHIDDevice HID_Blinky;
 	HANDLE m_hNotifyDevNode;
 	HANDLE HID_RX_THREAD;
-	bool RXthreadmaycontinue;
+	//bool RXthreadmaycontinue;
 
 	void PrintInfo(char* str);
 	void OpenUsb();
