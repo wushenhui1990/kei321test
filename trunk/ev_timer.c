@@ -29,7 +29,7 @@ void timer_event_init(void)
 char timer_event_add(timer_ev_unit_st*ev_unit)
 {
 	char idata ret = 0;
-	//bit ea_save = EA;
+	bit ea_save = EA;
 
 	EA = 0;
 
@@ -49,7 +49,7 @@ char timer_event_add(timer_ev_unit_st*ev_unit)
 
 	}
 
-	EA =1;
+	EA =ea_save;
 
 	return ret;
 }

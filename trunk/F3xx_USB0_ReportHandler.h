@@ -34,20 +34,25 @@
 #include "type.h"
 
 #define REPORT_ID_IN_MTOUCH   	0x01
-#define REPORT_ID_IN_IMAGE    	0x02
+#define REPORT_ID_IN_DBGINFO   	0x02
 #define REPORT_ID_OUT_CMD     	0x03
 #define REPORT_ID_IN_FEATURE	0x04
 
 // ----------------------------------------------------------------------------
 // Report Sizes (in bytes)
 // ----------------------------------------------------------------------------
-#define REPORT_ID_OUT_CMD_LEN    0x08
-#define REPORT_ID_IN_IMAGE_LEN   0x3f
-#define REPORT_ID_IN_MTOUCH_LEN  0x0d
+#define REPORT_ID_OUT_CMD_LEN		0x08
+#define REPORT_ID_IN_DBGINFO_LEN  	0x3f
+#define REPORT_ID_IN_MTOUCH_LEN  	0x0d
 
 
 #define  OUT_PACKET_LEN		16
 #define  IN_PACKET_LEN		64
+
+#define	WORK_STYLE_IDLE			0x00
+#define WORK_STYLE_PREVIEW		0x01
+#define WORK_STYLE_CAL			0x02
+#define WORK_STYLE_NOMAL		0x03
 
 typedef struct {
    unsigned char ReportID;
@@ -71,6 +76,7 @@ typedef struct{
  	unsigned char cam_num;
  	unsigned char send_cur_idx;
 	unsigned char send_tot_cnt;
+	unsigned char remain;
  }cam_send_img_stat_st;
 
  typedef enum
@@ -81,7 +87,7 @@ typedef struct{
 	DATA_CMD_READ_REG=3,
 	DATA_CMD_I2C_WRITE_REG=4,
 	DATA_CMD_I2C_READ_REG=5,
-	DATA_CMD_CONFIG_SENSOR=10,
+	DATA_CMD_SWITCH_WORK_STYLE=10,
 	DATA_CMD_READ_IMAGE = 11,
 	DATA_TYPE_COUNT
 }COM_DATA_TYPE;

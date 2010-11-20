@@ -60,6 +60,10 @@ extern u8 	g_ev_head;
 extern u8 	g_ev_tail;
 extern u8 	g_ev_len;
 
+
+
+u8		g_work_style = 0;
+
 void Usb_Init(void)
 {
    POLL_WRITE_BYTE(POWER,  0x08);      // Force Asynchronous USB Reset
@@ -144,8 +148,21 @@ void main(void)
 
 	while (1)
 	{
-		event_process();		
-	//	get_frame_data();
+		event_process();
+		
+		if(g_work_style == WORK_STYLE_PREVIEW)
+		{
+			get_frame_data();			
+		}
+		else if(g_work_style == WORK_STYLE_CAL)
+		{
+		
+		}
+		else if(g_work_style == WORK_STYLE_CAL)
+		{
+		
+		}
+	//	
 
 	//	if(((cnt++%10000)==0)&&(cnt))
 	//	{
