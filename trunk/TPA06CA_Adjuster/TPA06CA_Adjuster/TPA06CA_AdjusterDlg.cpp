@@ -138,6 +138,8 @@ unsigned char g_cmd_buff[32] ;
 
 char debugstr[128] = {0};
 unsigned char * m_pYdata =NULL;
+
+#define		TRY_CNT		256
 //signal,auto,
 unsigned int main_work_thread(void *param)
 {
@@ -175,24 +177,35 @@ unsigned int main_work_thread(void *param)
 
 					pthis->HID_Blinky.SetOutputReport_Interrupt(buff,REPORT_ID_OUT_CMD_LEN+1);	//write
 
-					status = pthis->HID_InterruptGetReport (reportbuffer);						//read
-					if(status == HID_DEVICE_SUCCESS)
+					cnt = TRY_CNT;
+					while(cnt--)
 					{
-						if((reportbuffer[0]==REPORT_ID_IN_IMAGE) &&				//
-						   ((reportbuffer[1]&0x3f) == DATA_CMD_WRITE_REG) &&		
-						   (reportbuffer[2] == 0))
-						{
-							addr = (reportbuffer[3])|(reportbuffer[4]<<8);
-							val  = reportbuffer[5];
-							
-							pthis->PrintInfo("ok");
-						}
-						else
-						{
-							pthis->PrintInfo("some err1\n");
-						}
-					}
+						status = pthis->HID_InterruptGetReport (reportbuffer);						//read
 
+						if((status == HID_DEVICE_SUCCESS) && (reportbuffer[0]==REPORT_ID_IN_IMAGE) && ((reportbuffer[1]&0x3f) == DATA_CMD_WRITE_REG))
+						{
+							if(reportbuffer[2] == 0) 
+							{
+								addr = (reportbuffer[3])|(reportbuffer[4]<<8);
+								val  = reportbuffer[5];
+								
+								pthis->PrintInfo("ok");
+							}
+							else
+							{
+								pthis->PrintInfo("some err1\n");
+							}
+
+							break;
+						}
+
+						if((status == HID_DEVICE_TRANSFER_TIMEOUT)|| (cnt ==0))	
+						{
+							pthis->PrintInfo("time out\n");
+							break;
+						}
+
+					}
 					::SendMessage(pthis->m_hWnd,WM_MAIN_WINDOW_FLUSH_MSG,0,0);
 					g_event_reg_rdwr.SetEvent();
 
@@ -212,30 +225,40 @@ unsigned int main_work_thread(void *param)
 					pthis->PrintInfo(debugstr);
 
 					pthis->HID_Blinky.SetOutputReport_Interrupt(buff,REPORT_ID_OUT_CMD_LEN+1);
-
-					status = pthis->HID_InterruptGetReport (reportbuffer);
-					if(status == HID_DEVICE_SUCCESS)
+					
+					cnt = TRY_CNT;
+					while(cnt--)
 					{
-						if((reportbuffer[0]==REPORT_ID_IN_IMAGE) &&				//
-						   ((reportbuffer[1]&0x3f) == DATA_CMD_READ_REG) &&		
-						   (reportbuffer[2] == 0))
+						status = pthis->HID_InterruptGetReport (reportbuffer);
+
+						if((status == HID_DEVICE_SUCCESS) && (reportbuffer[0]==REPORT_ID_IN_IMAGE) && ((reportbuffer[1]&0x3f) == DATA_CMD_READ_REG))
 						{
-							addr = (reportbuffer[3])|(reportbuffer[4]<<8);
-							val  = reportbuffer[5];
-							retval = reportbuffer[6];
+								if(reportbuffer[2] == 0)
+								{
+									addr = (reportbuffer[3])|(reportbuffer[4]<<8);
+									val  = reportbuffer[5];
+									retval = reportbuffer[6];
 
-							pthis->m_RegValue.Format(_T("0x%x"),retval);
+									pthis->m_RegValue.Format(_T("0x%x"),retval);
 
-							sprintf_s(str,"[%02x][%02x] ok\n",val,retval);
+									sprintf_s(str,"[%02x][%02x] ok\n",val,retval);
 
-							pthis->PrintInfo(str);
+									pthis->PrintInfo(str);
+								}
+								else
+								{
+									pthis->PrintInfo("some err2\n");
+								}
 
-							//pthis->PrintInfo("ok");
+								break;
 						}
-						else
+
+						if((status == HID_DEVICE_TRANSFER_TIMEOUT)|| (cnt ==0))	
 						{
-							pthis->PrintInfo("some err2\n");
+							pthis->PrintInfo("time out\n");
+							break;
 						}
+
 					}
 
 					::SendMessage(pthis->m_hWnd,WM_MAIN_WINDOW_FLUSH_MSG,0,0);
@@ -256,21 +279,32 @@ unsigned int main_work_thread(void *param)
 
 					pthis->HID_Blinky.SetOutputReport_Interrupt(buff,REPORT_ID_OUT_CMD_LEN+1);
 
-					status = pthis->HID_InterruptGetReport (reportbuffer);						//read
-					if(status == HID_DEVICE_SUCCESS)
+					cnt = TRY_CNT;
+					while(cnt--)
 					{
-						if((reportbuffer[0]==REPORT_ID_IN_IMAGE) &&				//
-						   ((reportbuffer[1]&0x3f) == DATA_CMD_I2C_WRITE_REG) &&		
-						   (reportbuffer[2] == 0))
+						status = pthis->HID_InterruptGetReport (reportbuffer);						//read
+
+						if((status == HID_DEVICE_SUCCESS ) && (reportbuffer[0]==REPORT_ID_IN_IMAGE) && ((reportbuffer[1]&0x3f) == DATA_CMD_I2C_WRITE_REG))
 						{
-							addr = reportbuffer[3];
-							val  = reportbuffer[4];
-							
-							pthis->PrintInfo("ok\n");
+							if(reportbuffer[2] == 0) 
+							{
+								addr = reportbuffer[3];
+								val  = reportbuffer[4];
+								
+								pthis->PrintInfo("ok\n");
+							}
+							else
+							{
+								pthis->PrintInfo("some err3\n");
+							}
+
+							break;
 						}
-						else
+										
+						if((status == HID_DEVICE_TRANSFER_TIMEOUT)|| (cnt ==0))	
 						{
-							pthis->PrintInfo("some err3\n");
+							pthis->PrintInfo("time out\n");
+							break;
 						}
 					}
 
@@ -293,27 +327,36 @@ unsigned int main_work_thread(void *param)
 
 					pthis->HID_Blinky.SetOutputReport_Interrupt(buff,REPORT_ID_OUT_CMD_LEN+1);
 
-					status = pthis->HID_InterruptGetReport (reportbuffer);						//read
-					if(status == HID_DEVICE_SUCCESS)
+					cnt = TRY_CNT;
+					while(cnt--)
 					{
-						if((reportbuffer[0]==REPORT_ID_IN_IMAGE) &&				//
-						   ((reportbuffer[1]&0x3f) == DATA_CMD_I2C_READ_REG) &&		
-						   (reportbuffer[2] == 0))
+						status = pthis->HID_InterruptGetReport (reportbuffer);						//read
+						if((status == HID_DEVICE_SUCCESS) && (reportbuffer[0]==REPORT_ID_IN_IMAGE) && ((reportbuffer[1]&0x3f) == DATA_CMD_I2C_READ_REG))
 						{
-							addr = reportbuffer[3];
-							val  = reportbuffer[4];
-							retval = reportbuffer[5];
-							pthis->m_RegValue.Format(_T("0x%x"),retval);
+							if(reportbuffer[2] == 0)
+							{
+								addr = reportbuffer[3];
+								val  = reportbuffer[4];
+								retval = reportbuffer[5];
+								pthis->m_RegValue.Format(_T("0x%x"),retval);
 
-							sprintf_s(str,"[%02x][%02x] ok\n",val,retval);
-							pthis->PrintInfo(str);
-							
+								sprintf_s(str,"[%02x][%02x] ok\n",val,retval);
+								pthis->PrintInfo(str);				
+							}
+							else
+							{
+								pthis->PrintInfo("some err4\n");
+							}
+							break;
 						}
-						else
+
+						if((status == HID_DEVICE_TRANSFER_TIMEOUT)|| (cnt ==0))	
 						{
-							pthis->PrintInfo("some err4\n");
+							pthis->PrintInfo("time out\n");
+							break;
 						}
 					}
+
 
 					::SendMessage(pthis->m_hWnd,WM_MAIN_WINDOW_FLUSH_MSG,0,0);
 					g_event_reg_rdwr.SetEvent();
@@ -331,7 +374,7 @@ unsigned int main_work_thread(void *param)
 
 					pthis->HID_Blinky.SetOutputReport_Interrupt(buff,REPORT_ID_OUT_CMD_LEN+1);
 					
-					cnt = 256;
+					cnt = TRY_CNT;
 					while(cnt--)
 					{
 						status = pthis->HID_InterruptGetReport (reportbuffer);	
@@ -358,24 +401,6 @@ unsigned int main_work_thread(void *param)
 						{
 							pthis->PrintInfo("time out\n");
 							break;
-						}
-					}
-
-					//i think usb has a buffer for save data i dont fetch. test as follows
-					{
-						if((reportbuffer[2]&0x3f)==0) //work style. //idle
-						{
-							cnt = 256;
-							while(cnt--)
-							{
-								status = pthis->HID_InterruptGetReport (reportbuffer);
-								if(status!=HID_DEVICE_SUCCESS)
-									break;
-
-							//TRACE("%x %x\n",status,pthis->HID_Blinky.GetInputReportBufferLength()); 
-								TRACE("status2 %x %x %x %x %x\n",status,reportbuffer[0],reportbuffer[1],reportbuffer[2] ,reportbuffer[3] ); 
-							}
-
 						}
 					}
 
