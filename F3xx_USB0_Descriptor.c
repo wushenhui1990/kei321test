@@ -73,8 +73,8 @@ unsigned char code HID_report_desc[] =
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
     0x09, 0x01,                    //   USAGE (Vendor Usage 1)
     0x91, 0x02,                    //   OUTPUT (Data,Var,Abs)
-    0x85, REPORT_ID_IN_IMAGE,     // Report ID
-    0x95, REPORT_ID_IN_IMAGE_LEN,   //   REPORT_COUNT ()
+    0x85, REPORT_ID_IN_DBGINFO,     // Report ID
+    0x95, REPORT_ID_IN_DBGINFO_LEN,   //   REPORT_COUNT ()
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
@@ -191,8 +191,8 @@ unsigned char code HID_report_desc[] =
     0x09, 0x01,							// USAGE (Vendor Usage 1)
 	0xa1, 0x01,							// COLLECTION (Application)
 	
-    0x85, REPORT_ID_IN_IMAGE,			// 	   REPORT_ID (Debug info)
-	0x95, REPORT_ID_IN_IMAGE_LEN,
+    0x85, REPORT_ID_IN_DBGINFO,			// 	   REPORT_ID (Debug info)
+	0x95, REPORT_ID_IN_DBGINFO_LEN,
     0x75, 0x08,                    		//   REPORT_SIZE (8)
     0x26, 0xff, 0x00,              		//   LOGICAL_MAXIMUM (255)
     0x15, 0x00,                    		//   LOGICAL_MINIMUM (0)

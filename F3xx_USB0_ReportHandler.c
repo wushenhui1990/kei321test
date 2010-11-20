@@ -48,80 +48,19 @@
 #define  OUT_PACKET_LEN		16
 #define  IN_PACKET_LEN		64
 
-unsigned char xdata OUT_PACKET[OUT_PACKET_LEN];	// = {0,0,0,0,0,0,0,0,0};
-unsigned char xdata IN_PACKET[IN_PACKET_LEN];	//  = {0,0,0};
-unsigned char xdata cur_cam_idx ;
-
+u8	xdata OUT_PACKET[OUT_PACKET_LEN];	// = {0,0,0,0,0,0,0,0,0};
+u8  xdata IN_PACKET[IN_PACKET_LEN];	//  = {0,0,0};
+u8  xdata cur_cam_idx ;
 cam_send_img_stat_st cam_status[CAM_COUNT];
 
 //u8 IN_PACKET[8];
 
 extern u8 code cmd_config_sensor[];
 extern u8 code cmd_config_sensor_cnt;
+extern u8	g_work_style;
 
-extern void Fifo_Write_Foreground (unsigned char addr, unsigned int uNumBytes, unsigned char * pData);
+extern void Fifo_Write_Foreground (u8 addr, unsigned int uNumBytes, u8 * pData);
 
-// ----------------------------------------------------------------------------
-// Local Function Prototypes
-// ----------------------------------------------------------------------------
-
-// ****************************************************************************
-// Add custom Report Handler Prototypes Here
-// ****************************************************************************
-
-void IN_Report(void);
-void OUT_Report(void);
-
-//void send_image_to_host(void);
-//void OUT_BLINK_ENABLE(void);
-//void recv_cmd_from_host(void);
-//void OUT_BLINK_RATE(void);
-//void send_mtouch_to_host(void);
-//void FEATURE_BLINK_DIMMER_INPUT (void);
-//void FEATURE_BLINK_DIMMER_OUTPUT (void);
-// ----------------------------------------------------------------------------
-// Local Definitions
-// ----------------------------------------------------------------------------
-
-// ****************************************************************************
-// Set Definitions to sizes corresponding to the number of reports
-// ****************************************************************************
-
-//#define IN_VECTORTABLESize 3
-//#define OUT_VECTORTABLESize 4
-//#define IN_VECTORTABLESize 2
-//#define OUT_VECTORTABLESize 1
-
-// ----------------------------------------------------------------------------
-// Global Constant Declaration
-// ----------------------------------------------------------------------------
-
-
-// ****************************************************************************
-// Link all Report Handler functions to corresponding Report IDs
-// ****************************************************************************
-
-//const VectorTableEntry IN_VECTORTABLE[IN_VECTORTABLESize] =
-//{
-//   // FORMAT: Report ID, Report Handler
-//   //REPORT_ID_IN_IMAGE, send_image_to_host,
-//   REPORT_ID_IN_MTOUCH, send_mtouch_to_host,
-////   FEATURE_BLINK_DIMMERID, FEATURE_BLINK_DIMMER_INPUT
-//};
-/*
-// ****************************************************************************
-// Link all Report Handler functions to corresponding Report IDs
-// ****************************************************************************
-const VectorTableEntry OUT_VECTORTABLE[OUT_VECTORTABLESize] =
-{
-   // FORMAT: Report ID, Report Handler
-  // OUT_BLINK_ENABLEID, OUT_BLINK_ENABLE,
-   REPORT_ID_OUT_CMD, recv_cmd_from_host,
- //  OUT_BLINK_RATEID, OUT_BLINK_RATE,
- //  FEATURE_BLINK_DIMMERID, FEATURE_BLINK_DIMMER_OUTPUT
-
-};
-*/
 
 // ----------------------------------------------------------------------------
 // Global Variable Declaration
@@ -129,117 +68,12 @@ const VectorTableEntry OUT_VECTORTABLE[OUT_VECTORTABLESize] =
 
 BufferStructure IN_BUFFER, OUT_BUFFER;
 
-// ----------------------------------------------------------------------------
-// Local Variable Declaration
-// ----------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------
-// Local Functions
-// ----------------------------------------------------------------------------
-
-// ****************************************************************************
-// Add all Report Handler routines here
-// ****************************************************************************
-
-
-// ****************************************************************************
-// For Input Reports:
-// Point IN_BUFFER.Ptr to the buffer containing the report
-// Set IN_BUFFER.Length to the number of bytes that will be
-// transmitted.
-//
-// REMINDER:
-// Systems using more than one report must define Report IDs
-// for each report.  These Report IDs must be included as the first
-// byte of an IN report.
-// Systems with Report IDs should set the FIRST byte of their buffer
-// to the value for the Report ID
-// AND
-// must transmit Report Size + 1 to include the full report PLUS
-// the Report ID.
-//
-// ****************************************************************************
-
-// ----------------------------------------------------------------------------
-// send_image_to_host()
-// ----------------------------------------------------------------------------
-// This handler formats a BLINK_SELECTOR report, which requests a new
-// blink pattern from the host application.
-//
-//	id, cam, idx, len, +data
-//
-//-----------------------------------------------------------------------------
-/*
-void send_image_to_host(void)
-{
-	unsigned char idata i;
-
-	cur_cam_idx = 0;
-
-	IN_PACKET[0] = REPORT_ID_IN_IMAGE;	 //id
-	
-	IN_PACKET[1] = cam_status[cur_cam_idx].cam_num;	   		//which sensor ,left or right
-	IN_PACKET[2] = cam_status[cur_cam_idx].send_cur_idx++;
-	IN_PACKET[3] = 60;
-
-	cam_status[cur_cam_idx].send_cur_idx%=cam_status[cur_cam_idx].send_tot_cnt;
-
-
-	for(i=4;i<=REPORT_ID_IN_IMAGE_LEN;i++)
-	{
-		IN_PACKET[i] = i;
-	}
-	
-	IN_BUFFER.Ptr = IN_PACKET;
-	
-	IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN+1;
-}
-*/
-// ----------------------------------------------------------------------------
-// IN_Blink_Stats()
-// ----------------------------------------------------------------------------
-// This routine sends statistics calculated in Blink_Control_...c to
-// the host application.
-//-----------------------------------------------------------------------------
-//void send_mtouch_to_host(void)
-//{
-//   IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
-//
-//   IN_BUFFER.Ptr = IN_PACKET;
-//   IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
-//}
-
-
-// ****************************************************************************
-// For Output Reports:
-// Data contained in the buffer OUT_BUFFER.Ptr will not be
-// preserved after the Report Handler exits.
-// Any data that needs to be preserved should be copyed from
-// the OUT_BUFFER.Ptr and into other user-defined memory.
-//
-// ****************************************************************************
-
-
-// ----------------------------------------------------------------------------
-// OUT_BLINK_ENABLE()
-// ----------------------------------------------------------------------------
-// This handler saves the Blink enable state sent from the host.
-//-----------------------------------------------------------------------------
-/*
-void OUT_BLINK_ENABLE(void)
-{
-
-   BLINK_ENABLE = OUT_BUFFER.Ptr[1];
-
-}
-*/
-
 extern u8 IN_PACKET[];
 
 void send_debug_info_to_host(u8 rid)
 {
 	bit EAState;
-	unsigned char ControlReg;
+	u8 ControlReg;
 
 	EAState = EA;
 	EA = 0;
@@ -271,10 +105,10 @@ void send_debug_info_to_host(u8 rid)
 
 		// ReportHandler_IN_Foreground (ReportID);
 
-		if(rid == REPORT_ID_IN_IMAGE)
+		if(rid == REPORT_ID_IN_DBGINFO)
 		{
 			IN_BUFFER.Ptr = IN_PACKET;
-			IN_BUFFER.Length = REPORT_ID_IN_IMAGE_LEN + 1;
+			IN_BUFFER.Length = REPORT_ID_IN_DBGINFO_LEN + 1;
 		}
 		else if(rid == REPORT_ID_IN_MTOUCH)
 		{
@@ -282,7 +116,7 @@ void send_debug_info_to_host(u8 rid)
 			IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
 		}
 		// Put new data on Fifo
-		Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(unsigned char *)IN_BUFFER.Ptr);
+		Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(u8 *)IN_BUFFER.Ptr);
 
 		POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
 		// Set In Packet ready bit,
@@ -291,169 +125,12 @@ void send_debug_info_to_host(u8 rid)
 	EA = EAState;
 
 }
-/*
-void send_debug_info_to_host_1(void)
+
+void handle_report_out(void)
 {
-	bit EAState;
-	unsigned char ControlReg;
-
-	EAState = EA;
-	EA = 0;
-
-	POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
-
-	// Read contol register for EP 1
-	POLL_READ_BYTE (EINCSR1, ControlReg);
-
-	if (EP_STATUS[1] == EP_HALT)        // If endpoint is currently halted,send a stall
-	{
-		POLL_WRITE_BYTE (EINCSR1, rbInSDSTL);
-	}
-
-	else if(EP_STATUS[1] == EP_IDLE)
-	{
-		// the state will be updated inside the ISR handler
-		EP_STATUS[1] = EP_TX;
-
-		if (ControlReg & rbInSTSTL)      // Clear sent stall if last  packet returned a stall
-		{
-			POLL_WRITE_BYTE (EINCSR1, rbInCLRDT);
-		}
-
-		if (ControlReg & rbInUNDRUN)     // Clear underrun bit if it was set
-		{
-			POLL_WRITE_BYTE (EINCSR1, 0x00);
-		}
-
-		// ReportHandler_IN_Foreground (ReportID);
-
-		// Put new data on Fifo
-		Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(unsigned char *)IN_BUFFER.Ptr);
-
-		POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
-		// Set In Packet ready bit,
-	}                                   // indicating fresh data on FIFO 1
-
-	EA = EAState;
-
-}
-*/
-/*
-void send_debug_info_to_host_1 (void)
-{
-   bit EAState;
-   unsigned char ControlReg;
-
-   EAState = EA;
-   EA = 0;
-
-   POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
-
-   // Read contol register for EP 1
-    POLL_READ_BYTE (EINCSR1, ControlReg);
-
-   if (EP_STATUS[1] == EP_HALT)        // If endpoint is currently halted,
-                                       // send a stall
-   {
-      POLL_WRITE_BYTE (EINCSR1, rbInSDSTL);
-   }
-
-   else if(EP_STATUS[1] == EP_IDLE)
-   {
-      // the state will be updated inside the ISR handler
-      EP_STATUS[1] = EP_TX;
-
-      if (ControlReg & rbInSTSTL)      // Clear sent stall if last
-                                       // packet returned a stall
-      {
-         POLL_WRITE_BYTE (EINCSR1, rbInCLRDT);
-      }
-
-      if (ControlReg & rbInUNDRUN)     // Clear underrun bit if it was set
-      {
-         POLL_WRITE_BYTE (EINCSR1, 0x00);
-      }
-
-      //ReportHandler_IN_Foreground (ReportID);
-
-      // Put new data on Fifo
-      Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,
-                    (unsigned char *)IN_BUFFER.Ptr);
-      POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
-                                       // Set In Packet ready bit,
-   }                                   // indicating fresh data on FIFO 1
-
-   EA = EAState;
-}
- */
- /*
-void send_mtouch_to_host_1 (void)
-{
-   bit EAState;
-   unsigned char ControlReg;
-
-   EAState = EA;
-   EA = 0;
-
-   POLL_WRITE_BYTE (INDEX, 1);         // Set index to endpoint 1 registers
-
-   // Read contol register for EP 1
-    POLL_READ_BYTE (EINCSR1, ControlReg);
-
-   if (EP_STATUS[1] == EP_HALT)        // If endpoint is currently halted,
-                                       // send a stall
-   {
-      POLL_WRITE_BYTE (EINCSR1, rbInSDSTL);
-   }
-
-   else if(EP_STATUS[1] == EP_IDLE)
-   {
-      // the state will be updated inside the ISR handler
-      EP_STATUS[1] = EP_TX;
-
-      if (ControlReg & rbInSTSTL)      // Clear sent stall if last
-                                       // packet returned a stall
-      {
-         POLL_WRITE_BYTE (EINCSR1, rbInCLRDT);
-      }
-
-      if (ControlReg & rbInUNDRUN)     // Clear underrun bit if it was set
-      {
-         POLL_WRITE_BYTE (EINCSR1, 0x00);
-      }
-
-      //ReportHandler_IN_Foreground (ReportID);
-
-      // Put new data on Fifo
-	    IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
-   		IN_BUFFER.Ptr = IN_PACKET;
-   		IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
-
-      Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(unsigned char *)IN_BUFFER.Ptr);
-      POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
-                                       // Set In Packet ready bit,
-   }                                   // indicating fresh data on FIFO 1
-
-   EA = EAState;
-}
-*/
-// ----------------------------------------------------------------------------
-// ReportHandler_OUT()
-// ----------------------------------------------------------------------------
-// This handler saves a blinking pattern sent by the host application.
-//-----------------------------------------------------------------------------
-
-void ReportHandler_OUT(u8 rid)
-{
-
 	u8 	idata idx,sen_addr,reg_val,ret,cmd;
-	u16 idata reg_addr,cur_idx,cur_len;
-	u8  idata flag;
+	u16 idata reg_addr;
 
-	if(rid!=REPORT_ID_OUT_CMD)
-	{
-		return;
-	}
 
 	cmd = OUT_BUFFER.Ptr[1];
 	
@@ -463,7 +140,7 @@ void ReportHandler_OUT(u8 rid)
 		reg_val  =  OUT_BUFFER.Ptr[4];
 		uart_write_reg(reg_addr,reg_val);
 
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[0] = REPORT_ID_IN_DBGINFO;		//report id
 		IN_PACKET[1] = DATA_CMD_WRITE_REG;		//date type
 		IN_PACKET[2] = 0; //err code				//err code
 		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
@@ -471,7 +148,7 @@ void ReportHandler_OUT(u8 rid)
 		IN_PACKET[5] = OUT_BUFFER.Ptr[4];		//val
 
 		//event_send(EVENT_ID_RETURN_HOST_CMD);
-		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
+		send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
 
 	}
 	else if(cmd ==DATA_CMD_READ_REG)
@@ -479,7 +156,7 @@ void ReportHandler_OUT(u8 rid)
 		reg_addr = OUT_BUFFER.Ptr[2]|(OUT_BUFFER.Ptr[3]<<8);
 		ret = uart_read_reg(reg_addr,&reg_val);	
 
- 		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+ 		IN_PACKET[0] = REPORT_ID_IN_DBGINFO;		//report id
 		IN_PACKET[1] = DATA_CMD_READ_REG;		//date type
 		IN_PACKET[2] = ret; 					//err code
 		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
@@ -488,7 +165,7 @@ void ReportHandler_OUT(u8 rid)
 		IN_PACKET[6] = reg_val;		
 
 		//event_send(EVENT_ID_RETURN_HOST_CMD);
-		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
+		send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
 	}
 	else if(cmd ==DATA_CMD_I2C_WRITE_REG)
 	{
@@ -496,14 +173,14 @@ void ReportHandler_OUT(u8 rid)
 		reg_val  = OUT_BUFFER.Ptr[3];
 
 		i2c_write_reg(reg_addr,reg_val);
- 		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+ 		IN_PACKET[0] = REPORT_ID_IN_DBGINFO;		//report id
 		IN_PACKET[1] = DATA_CMD_I2C_WRITE_REG;	//date type
 		IN_PACKET[2] = 0; 						//err code
 		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
 		IN_PACKET[4] = OUT_BUFFER.Ptr[3];		//val		
 
 		//event_send(EVENT_ID_RETURN_HOST_CMD);
-		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
+		send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
 
 	}
 	else if(cmd ==DATA_CMD_I2C_READ_REG)
@@ -512,7 +189,7 @@ void ReportHandler_OUT(u8 rid)
 		//reg_val  = OUT_BUFFER.Ptr[3];
 		ret = i2c_read_reg(reg_addr,&reg_val);
 
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
+		IN_PACKET[0] = REPORT_ID_IN_DBGINFO;		//report id
 		IN_PACKET[1] = DATA_CMD_I2C_READ_REG;	//date type
 		IN_PACKET[2] = ret; 					//err code
 		IN_PACKET[3] = OUT_BUFFER.Ptr[2];		//addr
@@ -520,124 +197,41 @@ void ReportHandler_OUT(u8 rid)
 		IN_PACKET[5] = reg_val;			
 
 	//	event_send(EVENT_ID_RETURN_HOST_CMD);
-		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
+		send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
 
 	}
 
-	else if(cmd ==DATA_CMD_CONFIG_SENSOR)
+	else if(cmd ==DATA_CMD_SWITCH_WORK_STYLE)
 	{
 
-		for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
+		g_work_style = OUT_BUFFER.Ptr[2];
+
+		if(	g_work_style == WORK_STYLE_PREVIEW)
 		{
-			sen_addr = 	cmd_config_sensor[idx<<1];
-			reg_val  =  cmd_config_sensor[(idx<<1)+1];
-			i2c_write_reg(sen_addr,reg_val);	
-		}
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;		//report id
-		IN_PACKET[1] = DATA_CMD_CONFIG_SENSOR;	//date type
-		IN_PACKET[2] = 0; 					//err code
-//		event_send(EVENT_ID_RETURN_HOST_CMD);
-		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
-
-
-	}
-	else if(cmd ==DATA_CMD_READ_IMAGE)
-	{
-
-	   	cur_idx = OUT_BUFFER.Ptr[2] | (OUT_BUFFER.Ptr[3]<<8);
-		cur_len = OUT_BUFFER.Ptr[4] | ((OUT_BUFFER.Ptr[5]&0x3f)<<8);
-		flag = OUT_BUFFER.Ptr[5]&0xc0;    // start end  x x  x x x x
-
-		if(flag&0x80)	 //start one frame (bit7)
-		{
-			uart_write_reg(PBI_MODE,0x1);
-	 		uart_write_reg(SIF_FRMSTART,0x01);
-			while(1)
+			for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
 			{
-				uart_read_reg(SIF_FRMSTART,&reg_val);
-				if(reg_val==0) break;
-				_nop_();_nop_();_nop_();_nop_();
-				_nop_();_nop_();_nop_();_nop_();
-				_nop_();_nop_();_nop_();_nop_();
-				_nop_();_nop_();_nop_();_nop_();
-		
+				sen_addr = 	cmd_config_sensor[idx<<1];
+				reg_val  =  cmd_config_sensor[(idx<<1)+1];
+				i2c_write_reg(sen_addr,reg_val);	
 			}
-
-			uart_write_reg(PDMC_VSYNC,0x01);
 		}
 
-
-		uart_burst_read(PDMC_PDATA,&IN_PACKET[4],cur_len);
-
- 		if(flag&0x40)	   	//end (bit6)
-		{
-			uart_write_reg(PBI_MODE,0x0);
-		}
-
-		IN_PACKET[0] = REPORT_ID_IN_IMAGE;
-		IN_PACKET[1] = flag|(DATA_LEFT_IMAGE&0x3f);
-		IN_PACKET[2] = (u8)cur_idx;
-		IN_PACKET[3] = ((cur_idx&0x0300)>>2)|(cur_len&0x3f);
+		IN_PACKET[0] = REPORT_ID_IN_DBGINFO;		//report id
+		IN_PACKET[1] = DATA_CMD_SWITCH_WORK_STYLE;	//date type
+		IN_PACKET[2] = OUT_BUFFER.Ptr[2];
+		IN_PACKET[3] = 0;
+		 					//err code
+//		event_send(EVENT_ID_RETURN_HOST_CMD);
+		send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
 
 
-		
-		send_debug_info_to_host(REPORT_ID_IN_IMAGE);
+	}
 
 
-
-
-		//event_send(EVENT_ID_RETURN_HOST_CMD);
-
-	}				
 
 }
 
 
-
-// ----------------------------------------------------------------------------
-// OUT_BLINK_RATE()
-// ----------------------------------------------------------------------------
-// This handler saves the two-byte blinking rate sent by the host.
-//-----------------------------------------------------------------------------
-/*
-void OUT_BLINK_RATE(void)
-{
-
-   BLINK_RATE = OUT_BUFFER.Ptr[1];
-   BLINK_RATE = BLINK_RATE<<8;
-   BLINK_RATE = BLINK_RATE+OUT_BUFFER.Ptr[2];
-}
-  */
-// ----------------------------------------------------------------------------
-// FEATURE_BLINK_DIMMER_OUTPUT
-// ----------------------------------------------------------------------------
-// This handler receives a new value for the brightness of the LEDs.
-//-----------------------------------------------------------------------------
-/*
-void FEATURE_BLINK_DIMMER_OUTPUT (void) 
-{
-   BLINK_DIMMER = OUT_BUFFER.Ptr[1];
-   BLINK_DIMMER_SUCCESS = 1;
-}
-*/
-// ----------------------------------------------------------------------------
-// FEATURE_BLINK_DIMMER_INPUT
-// ----------------------------------------------------------------------------
-// This handler outputs a value that tells the host that the new dimmer
-// value has been successfully received.
-//-----------------------------------------------------------------------------
-/*
-void FEATURE_BLINK_DIMMER_INPUT (void) 
-{
-   IN_PACKET[0] = FEATURE_BLINK_DIMMERID;
-   IN_PACKET[1] = BLINK_DIMMER_SUCCESS;
-   BLINK_DIMMER_SUCCESS = 0;
-
-   IN_BUFFER.Ptr = IN_PACKET;
-   IN_BUFFER.Length = FEATURE_BLINK_DIMMERSIZE + 1;
-
-}
-*/
 // ----------------------------------------------------------------------------
 // Global Functions
 // ----------------------------------------------------------------------------
@@ -680,7 +274,7 @@ void Setup_OUT_BUFFER(void)
 // However, this should never occur, as interrupts are disabled by SendPacket
 // before USB operation begins.
 // ----------------------------------------------------------------------------
-void ReportHandler_IN_ISR(unsigned char R_ID)
+void ReportHandler_IN_ISR(u8 R_ID)
 {
 	if(R_ID==REPORT_ID_IN_MTOUCH)
 	{
@@ -699,95 +293,27 @@ void ReportHandler_IN_ISR(unsigned char R_ID)
 	}
 }
 
-/*
-void ReportHandler_IN_ISR(unsigned char R_ID)
-{
-   unsigned char index;
 
-   index = 0;
-
-   while(index <= IN_VECTORTABLESize)
-   {
-      // Check to see if Report ID passed into function
-  	  // matches the Report ID for this entry in the Vector Table
-      if(IN_VECTORTABLE[index].ReportID == R_ID)
-      {
-         IN_VECTORTABLE[index].hdlr();
-         break;
-      }
-
-      // If Report IDs didn't match, increment the index pointer
-      index++;
-   }
-
-}*/
-/*
-void ReportHandler_IN_Foreground(unsigned char R_ID)
-{
-   unsigned char index;
-
-   index = 0;
-
-   while(index <= IN_VECTORTABLESize)
-   {
-      // Check to see if Report ID passed into function
-      // matches the Report ID for this entry in the Vector Table
-      if(IN_VECTORTABLE[index].ReportID == R_ID)
-      {
-         IN_VECTORTABLE[index].hdlr();
-         break;
-      }
-
-      // If Report IDs didn't match, increment the index pointer
-      index++;
-   }
-
-}
-*/
-// ----------------------------------------------------------------------------
-// ReportHandler_OUT
-// ----------------------------------------------------------------------------
-//
-// Return Value - None
-// Parameters - None
-//
-// This function matches the Report ID passed as a parameter
-// to an Output Report Handler.
-//
-// ----------------------------------------------------------------------------
-/*
-void ReportHandler_OUT(unsigned char R_ID){
-
-   unsigned char index;
-
-   index = 0;
-
-   while(index <= OUT_VECTORTABLESize)
-   {
-      // Check to see if Report ID passed into function
-      // matches the Report ID for this entry in the Vector Table
-      if(OUT_VECTORTABLE[index].ReportID == R_ID)
-      {
-         OUT_VECTORTABLE[index].hdlr();
-         break;
-      }
-
-      // If Report IDs didn't match, increment the index pointer
-      index++;
-   }
-}
-*/
 void report_handler_init(void)
 {
- 	u8 idata i;
+ 	u8 idata i,read_cnt,remain;
+	
+   	read_cnt = 	(IMAGE_WIDTH*IMAGE_HEIGHT)/BREAD_ONCE;
+	remain   =  (IMAGE_WIDTH*IMAGE_HEIGHT)%BREAD_ONCE;
+
+	if(remain)
+		read_cnt++;
+	
 	for(i = 0;i<CAM_COUNT;i++)
 	{
 	 	cam_status[i].cam_num = i;
 		cam_status[i].send_cur_idx = 0;
-		cam_status[i].send_tot_cnt = (IMAGE_WIDTH*IMAGE_HEIGHT+(BREAD_ONCE>>1))/BREAD_ONCE;
+		cam_status[i].send_tot_cnt = read_cnt;
+		cam_status[i].remain = (remain? remain:BREAD_ONCE);
 	}
 
-	//event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_debug_info_to_host);
+	//event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_switch_style_cmd_return);
+	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,handle_report_out);
 
 }
 

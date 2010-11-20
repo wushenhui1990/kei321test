@@ -6,9 +6,11 @@
 #include "uart.h"
 #include "bitop.h"
 #include "INTRINS.H"
+#include "ev.h"
 
 #include "fpga_define.h"
 #include "F3xx_USB0_ReportHandler.h"
+
 
 #if(UART_DEBUG==1)
 
@@ -258,12 +260,17 @@ u8 code cmd_config_sensor_cnt = (sizeof(cmd_config_sensor)>>1);
 u8 uart_send(u8 *buff,u16 len)
 {
 	u16 idata i;
+	bit easave;
+	easave = EA;
+	EA = 0;
+
     for(i=0;i<len;i++)
     {
 		while (!TI0);  	
 		TI0 = 0 ;
  		SBUF0=buff[i];
     }
+	EA = easave;
 	return ERR_CODE_NO_ERR;    
 }
 
@@ -273,6 +280,9 @@ u8 uart_read(u8 *buff,u16 len)
 {
 	u16 idata i;
 	u8	idata cnt;//
+	bit easave;
+	easave = EA;
+	EA = 0;
     for(i=0;i<len;i++)
     {	
 		cnt = 0xff;	
@@ -288,7 +298,7 @@ u8 uart_read(u8 *buff,u16 len)
 			break;			 
 		}
     }
-
+	EA = easave;
 	if(!cnt)
 		return ERR_CODE_READ_REG;	 //wait timeout
 	else
@@ -462,11 +472,12 @@ extern cam_send_img_stat_st cam_status[CAM_COUNT];
 extern unsigned char xdata IN_PACKET[IN_PACKET_LEN];
 u8 b_first = 1;
 u32 b_cnt = 0;
+
+#if 0
 void get_frame_data(void)
 {
 	u16 volatile i ;
 	u8 val = 0;
-//	bit eabak;
 	u8 read_cnt,remain;
 
    	uart_write_reg(PBI_MODE,0x01);
@@ -547,7 +558,71 @@ void get_frame_data(void)
 	uart_write_reg(PBI_MODE,0x0);
 
 }
+#else
+void get_frame_data(void)
+{
+//	u16 volatile i ;
+	u8 idata val = 0;
+	//u8 read_cnt,remain;
 
+	IN_PACKET[1] = 0;
+
+	if(cam_status[0].send_cur_idx == 0)//first 
+	{
+		
+		uart_write_reg(PBI_MODE,0x01);
+		uart_write_reg(SIF_FRMSTART,0x01);
+		while(1)
+		{
+			uart_read_reg(SIF_FRMSTART,&val);
+			if(val==0) break;
+			_nop_();_nop_();_nop_();_nop_();
+			_nop_();_nop_();_nop_();_nop_();
+			_nop_();_nop_();_nop_();_nop_();
+			_nop_();_nop_();_nop_();_nop_();
+		
+		}
+		
+		uart_write_reg(PDMC_VSYNC,0x01);
+		
+		IN_PACKET[1] &= ~0xc0;	//start flag
+		IN_PACKET[1] |= 0x80;
+		
+	}
+	
+	uart_burst_read(PDMC_PDATA,&IN_PACKET[4],BREAD_ONCE);			//read data
+
+	IN_PACKET[3] = BREAD_ONCE;
+	
+	if(cam_status[0].send_cur_idx == cam_status[0].send_tot_cnt-1)	//last 
+	{		
+		uart_write_reg(PBI_MODE,0x0);
+		
+		IN_PACKET[1] &= ~0xc0;	//end flag
+		IN_PACKET[1] |= 0x40;
+		IN_PACKET[3] = cam_status[0].remain;
+	}
+
+
+	//---------------------------------------------------------
+	IN_PACKET[0]  = REPORT_ID_IN_DBGINFO;
+	IN_PACKET[1] |= cam_status[0].cam_num;
+	IN_PACKET[2]  = cam_status[0].send_cur_idx;
+
+	
+
+  	IN_BUFFER.Ptr = IN_PACKET;	
+	IN_BUFFER.Length = REPORT_ID_IN_DBGINFO+1;
+	
+
+	cam_status[0].send_cur_idx++;
+	cam_status[0].send_cur_idx%=cam_status[0].send_tot_cnt;
+
+	//event_send(EVENT_ID_RETURN_HOST_CMD);
+	send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
+
+}
+#endif
 
 
 

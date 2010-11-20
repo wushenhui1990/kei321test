@@ -62,10 +62,16 @@ char event_send(u8 ev_id) reentrant
 	
 }
 //static unsigned long debug_cnt=0;
+extern unsigned char EP_STATUS[3];
+
 void event_process(void)  
 {
 	u8  idata ev_id;	
 	//u8  ea_save = IE;
+	bit eabak;
+	eabak = EA;
+
+	while(EP_STATUS[1] != 0);
 
 	if(g_ev_len) 
 	{
@@ -93,7 +99,7 @@ void event_process(void)
 
 
 
-		EA =1;
+		EA =eabak;
 	}
 	else
 	{
