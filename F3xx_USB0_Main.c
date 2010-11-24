@@ -56,13 +56,15 @@ extern void Init_Device(void);
 extern void test_func(void);
 extern void Interrupts_Init();
 
-extern u8 	g_ev_head;
-extern u8 	g_ev_tail;
-extern u8 	g_ev_len;
+extern u8	idata g_ev_head;
+extern u8 	idata g_ev_tail;
+extern u8 	idata g_ev_len;
 
 
+#define	TRIG_TIME	1000
 
-u8		g_work_style = 0;
+u8	idata g_work_style = 0;
+
 
 void Usb_Init(void)
 {
@@ -76,14 +78,13 @@ void Usb_Init(void)
                                        // mode disabled
 
    EIE1 |= 0x02;                       // Enable USB0 Interrupts
-  // EA = 1;                             // Global Interrupt enable
+  // EA = 1;                           // Global Interrupt enable
                                        // Enable USB0 by clearing the USB
                                        // Inhibit bit
    POLL_WRITE_BYTE(POWER,  0x01);      // and enable suspend detection
 }
 
 
-#define	TRIG_TIME	1000
 /*
 static void  func_for_debug(void) 
 {
@@ -102,8 +103,7 @@ static void  func_for_debug(void)
 // Main Routine
 //-----------------------------------------------------------------------------
 
-PanelPoint g_panel_point;
-extern void send_mtouch_to_host_1 (void);
+
 void main(void)
 {
 	u32 cnt = 0;
@@ -117,8 +117,6 @@ void main(void)
 #if 0
 {
    	timer_ev_unit_st xdata unit;
-	IE |= 0x02;		//timer 0 interrupt enable
-	TCON |= 0x10; 	//timer 0 enable
 	timer_event_init();
 	unit.event = EVENT_ID_TIMER_DEBUG;
 	unit.time = TRIG_TIME;
@@ -136,15 +134,15 @@ void main(void)
 //	while(cnt++<65536);
 //	config_sensor();
 
-//	test_func();
+	test_func();
 
  	Usb_Init();
 	
 	Interrupts_Init();	   //open relative interrupt.
 
-   	g_panel_point.id = 0;
- 	g_panel_point.x  = 0;
-	g_panel_point.y  = 0;
+   	//g_panel_point.ID = 0;
+ 	//g_panel_point.x  = 0;
+	//g_panel_point.y  = 0;
 
 	while (1)
 	{
@@ -152,28 +150,28 @@ void main(void)
 		
 		if(g_work_style == WORK_STYLE_PREVIEW)
 		{
-			get_frame_data();			
+			get_frame_data();
+			//while(EP_STATUS[1] != 0);
+			send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
 		}
 		else if(g_work_style == WORK_STYLE_CAL)
 		{
-		
+		 
 		}
-		else if(g_work_style == WORK_STYLE_CAL)
-		{
-		
+		else if(g_work_style == WORK_STYLE_NOMAL)
+		{ /*
+		 	g_panel_point.x +=200;
+			g_panel_point.y +=100;
+
+			g_panel_point.x %= 1600;
+			g_panel_point.y %= 900;
+
+			fill_hid_packet(&g_panel_point,1); 
+			send_debug_info_to_host(REPORT_ID_IN_MTOUCH);	
+		   */
 		}
-	//	
+		
 
-	//	if(((cnt++%10000)==0)&&(cnt))
-	//	{
-	//	 	g_panel_point.x +=200;
-	//		g_panel_point.y +=100;
-
-	//		g_panel_point.x %= 1600;
-	//		g_panel_point.y %= 900;
-	//		FillHidPacket(&g_panel_point,1); 
-	//		send_debug_info_to_host(REPORT_ID_IN_MTOUCH);	
-	//	}
 	}
 
 }

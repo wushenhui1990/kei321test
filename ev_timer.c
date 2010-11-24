@@ -3,8 +3,10 @@
 
 #if(TIMER_EVENT_ENABLE==1)
 
-static timer_event_st		  xdata		g_sys_timer_event;
+//static timer_event_st		  xdata		g_timer_event;
 
+static timer_ev_unit_st   g_timer_event[MAX_TIMER_EVENT_QUEUE];
+static u8  idata g_timer_event_tail;
 
 void timer_event_init(void)
 {
@@ -12,11 +14,11 @@ void timer_event_init(void)
 
 	for(i=0;i<MAX_TIMER_EVENT_QUEUE;i++)
     {
-		g_sys_timer_event.ev_unit[i].event = 0;
-		g_sys_timer_event.ev_unit[i].time = 0; 
-		g_sys_timer_event.ev_unit[i].time_bak = 0;
+		g_timer_event[i].event = 0;
+		g_timer_event[i].time = 0; 
+		g_timer_event[i].time_bak = 0;
 	}
-	g_sys_timer_event.tail = 0;
+	g_timer_event_tail = 0;
 
 }
 /*
@@ -33,18 +35,18 @@ char timer_event_add(timer_ev_unit_st*ev_unit)
 
 	EA = 0;
 
-	if(g_sys_timer_event.tail<MAX_TIMER_EVENT_QUEUE)
+	if(g_timer_event_tail<MAX_TIMER_EVENT_QUEUE)
 	{
 
-		g_sys_timer_event.ev_unit[g_sys_timer_event.tail].event = ev_unit->event;
-		g_sys_timer_event.ev_unit[g_sys_timer_event.tail].time = ev_unit->time; 
-		g_sys_timer_event.ev_unit[g_sys_timer_event.tail].time_bak = ev_unit->time;
-		g_sys_timer_event.ev_unit[g_sys_timer_event.tail].callback = ev_unit->callback;
+		g_timer_event[g_timer_event_tail].event = ev_unit->event;
+		g_timer_event[g_timer_event_tail].time = ev_unit->time; 
+		g_timer_event[g_timer_event_tail].time_bak = ev_unit->time;
+		g_timer_event[g_timer_event_tail].callback = ev_unit->callback;
 
 		ret = event_cb_regist(ev_unit->event,ev_unit->callback);
 		if(ret)
 		{
-		 	g_sys_timer_event.tail++;	
+		 	g_timer_event_tail++;	
 		}
 
 	}
@@ -63,17 +65,17 @@ char timer_event_del(u8 ev_id)
 
 	EA =0;
 
-	for(i=0;i< g_sys_timer_event.tail;i++)
+	for(i=0;i< g_timer_event.tail;i++)
 	{
-		if(g_sys_timer_event.ev_unit[i].event==ev_id)
+		if(g_timer_event.ev_unit[i].event==ev_id)
 		{
 			event_cb_unregist(ev_id);
 
-			for(j=i;j<g_sys_timer_event.tail;j++)
+			for(j=i;j<g_timer_event.tail;j++)
 			{
-			 	 g_sys_timer_event.ev_unit[j] =  g_sys_timer_event.ev_unit[j+1];
+			 	 g_timer_event.ev_unit[j] =  g_timer_event.ev_unit[j+1];
 			}
-			g_sys_timer_event.tail--;
+			g_timer_event.tail--;
 			ret = 1;
 			break;
 		}
@@ -88,14 +90,14 @@ void timer_event_process(void)
 {
 	u8 idata i;
 
-	for(i=0;i<g_sys_timer_event.tail;i++)
+	for(i=0;i<g_timer_event_tail;i++)
 	{
-		g_sys_timer_event.ev_unit[i].time--;
+		g_timer_event[i].time--;
 		
-		if(g_sys_timer_event.ev_unit[i].time ==0)
+		if(g_timer_event[i].time ==0)
 		{
-			g_sys_timer_event.ev_unit[i].time = g_sys_timer_event.ev_unit[i].time_bak;			
-			event_send(g_sys_timer_event.ev_unit[i].event);
+			g_timer_event[i].time = g_timer_event[i].time_bak;			
+			event_send(g_timer_event[i].event);
 		}
 	}
 

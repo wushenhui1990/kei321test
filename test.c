@@ -6,8 +6,8 @@
 /*
 void flash_rw_test(void)
 {
-   #define FLASH_WRITE_ADDR		0x3900
-   #define FLASH_WRITE_LEN		0x02
+   #define FLASH_WRITE_ADDR		0x3C00
+   #define FLASH_WRITE_LEN		0x40
 
 	unsigned char idata idx;
 	unsigned char idata diff = 0;	
@@ -40,7 +40,9 @@ void flash_rw_test(void)
 
 	if(diff)
 	{
-		flash_update(FLASH_WRITE_ADDR,src,FLASH_WRITE_LEN);
+		//flash_update(FLASH_WRITE_ADDR,src,FLASH_WRITE_LEN);
+		flash_pageerase(FLASH_WRITE_ADDR);
+		flash_write(FLASH_WRITE_ADDR,src,FLASH_WRITE_LEN);
 		flash_read(dst,FLASH_WRITE_ADDR,FLASH_WRITE_LEN);
 	
 		FS(("read_val_2:\n"));
@@ -56,13 +58,12 @@ void flash_rw_test(void)
 		FS(("\n"));
 	}
 }
-*/
 
-//extern void config_sensor_test(void);
-u8 xdata BACKUP_PACKET[13] = {0};
-extern unsigned char xdata IN_PACKET[IN_PACKET_LEN];
-u8 xdata g_backup_ptnum = 0;
+ */
+/*
 
+u8 idata BACKUP_PACKET[13] = {0};
+u8 idata g_backup_ptnum = 0;
 
 
 char FillHidPacket(PanelPoint *MyPoint,u8 PointNum)
@@ -91,7 +92,7 @@ char FillHidPacket(PanelPoint *MyPoint,u8 PointNum)
 	for (i=0;i<PointNum;i++)
 	{
 		IN_PACKET[1+6*i] = 0x03;
-		IN_PACKET[2+6*i] = MyPoint[i].id+1;
+		IN_PACKET[2+6*i] = MyPoint[i].ID+1;
 		IN_PACKET[3+6*i] = (unsigned char)(MyPoint[i].x);
 		IN_PACKET[4+6*i] = (unsigned char)(MyPoint[i].x>>8);
 		IN_PACKET[5+6*i] = (unsigned char)(MyPoint[i].y);
@@ -117,7 +118,7 @@ char FillHidPacket(PanelPoint *MyPoint,u8 PointNum)
 
 	return flag;
 }
-
+*/
 void test_func(void)
 {		
   	//flash_rw_test();

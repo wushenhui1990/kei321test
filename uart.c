@@ -320,15 +320,15 @@ u8 uart_read(u8 *buff,u16 len)
 #endif
 void delay(void)
 {
-	u8 volatile data cnt = 0xff;
+	u8 volatile idata cnt = 0xff;
 	while(--cnt);
 	//cnt = 0xff;
 	//while(--cnt);
 }
 u8 uart_write_reg(u32 addr, u8 value)
 {
-	u8 buf[6];
-	u8 err;
+	u8  idata buf[6];
+	u8  idata err;
 
 	buf[0] = CMD_PBI | 0x01;
 	buf[1] = PBI_APB_WRITE;
@@ -346,8 +346,8 @@ u8 uart_write_reg(u32 addr, u8 value)
 
 u8 uart_read_reg(u32 addr, u8 *pvalue)
 {
-	u8 buf[5];
-	u8 err;
+	u8  idata buf[5];
+	u8  idata err;
 	buf[0] = CMD_PBI;
 	buf[1] = PBI_APB_READ;
 	buf[2] = (u8)addr;
@@ -378,7 +378,7 @@ void uart_burst_write(u32 addr,u8 *buf,u8 len)
  */
 void uart_burst_read(u32 addr,u8 *buf,u16 len)
 {
-	u8 bufh[5];
+	u8  idata bufh[5];
 
 	uart_write_reg(UART_RLENL,len&0x00ff);
 	uart_write_reg(UART_RLENH,(len&0xff00)>>8);
@@ -420,7 +420,6 @@ void uart_burst_read(u32 addr,u8 *buf,u16 len)
 
 void i2c_write_reg(u8 addr,u8 val)
 {
-	u8 volatile cnt = 0xff;
 	uart_write_reg(I2C_ADDR,0x21);	
 	uart_write_reg(I2C_DATA0,addr);
 	uart_write_reg(I2C_DATA1,val); 
@@ -463,15 +462,15 @@ void config_sensor(void)
 		i2c_write_reg(addr,val);
 		
 		//ret = i2c_read_reg(addr,&val);
-		_nop_();	
+		//_nop_();	
 	}
 
 }
 
 extern cam_send_img_stat_st cam_status[CAM_COUNT];
-extern unsigned char xdata IN_PACKET[IN_PACKET_LEN];
-u8 b_first = 1;
-u32 b_cnt = 0;
+//extern unsigned char idata IN_PACKET[IN_PACKET_LEN];
+//u8 	b_first = 1;
+//u32 b_cnt = 0;
 
 #if 0
 void get_frame_data(void)
@@ -619,7 +618,7 @@ void get_frame_data(void)
 	cam_status[0].send_cur_idx%=cam_status[0].send_tot_cnt;
 
 	//event_send(EVENT_ID_RETURN_HOST_CMD);
-	send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
+	//send_debug_info_to_host(REPORT_ID_IN_DBGINFO);
 
 }
 #endif

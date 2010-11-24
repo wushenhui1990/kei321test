@@ -11,7 +11,7 @@
 
 #define MAX_EVENT_QUEUE			4
 
-#define TIMER0_ENABLE			0
+#define TIMER0_ENABLE			1
 
 #define TIMER_EVENT_ENABLE		0
 #endif

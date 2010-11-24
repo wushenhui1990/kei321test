@@ -4,23 +4,16 @@
 #include "uart.h"
 
 //----------------------------------------------------------
-u8				g_ev_event[MAX_EVENT_QUEUE];
-u8 				g_ev_head;
-u8 				g_ev_tail;
-u8 				g_ev_len;
+u8				idata g_ev_event[MAX_EVENT_QUEUE];
+u8 				idata g_ev_head;
+u8 				idata g_ev_tail;
+u8 				idata g_ev_len;
 
 void (*g_ev_handler[MAX_EVENT_QUEUE])(void);
 //----------------------------------------------------------	
 #define EVENT_DEBUG		0
 
 
-void ev_default_handler(void)
-{
-#if(EVENT_DEBUG==1)		
- 	FS(("in ev_default_handler\r\n"));
-#endif
-	return;
-}
 
 void event_init(void)
 {
@@ -34,8 +27,8 @@ void event_init(void)
 	g_ev_len=0;
 
 
-	for(i=0;i<MAX_EVENT_QUEUE;i++)
-		g_ev_handler[i]=ev_default_handler;
+	//for(i=0;i<MAX_EVENT_QUEUE;i++)
+	//	g_ev_handler[i]=ev_default_handler;
 }
  
  /*
@@ -67,15 +60,15 @@ extern unsigned char EP_STATUS[3];
 void event_process(void)  
 {
 	u8  idata ev_id;	
-	//u8  ea_save = IE;
 	bit eabak;
 	eabak = EA;
 
-	while(EP_STATUS[1] != 0);
 
 	if(g_ev_len) 
 	{
 
+		while(EP_STATUS[1] != 0);
+		
  		EA = 0;
 
 
@@ -114,49 +107,22 @@ void event_process(void)
  */
 char event_cb_regist(u8 ev_id,void (*pFunc)(void))
 {
-	if(ev_id>= MAX_EVENT_QUEUE)
+	if(ev_id<MAX_EVENT_QUEUE)
 	{
-#if(EVENT_DEBUG==1)		
-	FS(("reg invalid id: "));
-	FB((ev_id));
-	FS(("\n"));
-#endif
-		return 0;
+		g_ev_handler[ev_id] = pFunc;
+		return 1;
 	}
-	if(g_ev_handler[ev_id] != ev_default_handler)
-	{
-#if(EVENT_DEBUG==1)		
-	FS(("registed id: "));
-	FB((ev_id));
-	FS(("\n"));
-#endif
-		return 0;
-	}
-	g_ev_handler[ev_id] = pFunc;
-	return 1;
+	return 0;
 }
+
 /*
 char event_cb_unregist(u8 ev_id)
 {
-	if(ev_id>= MAX_EVENT_QUEUE)
+	if(ev_id<MAX_EVENT_QUEUE)
 	{
-#if(EVENT_DEBUG==1)		
-	FS(("unreg invalid id: "));
-	FB((ev_id));
-	FS(("\n"));
-#endif
-		return 0;
+		g_ev_handler[ev_id] = 0;
+		return 1;
 	}
-	if(g_ev_handler[ev_id] == ev_default_handler)
-	{
-#if(EVENT_DEBUG==1)		
-	FS(("no reged id: "));
-	FB((ev_id));
-	FS(("\n"));
-#endif
-		return 0;
-	}
-	g_ev_handler[ev_id] = ev_default_handler;
-	return 1;
+	return 0;
 }
 */

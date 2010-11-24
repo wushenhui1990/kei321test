@@ -41,6 +41,7 @@
 #include "ev.h"
 #include "fpga_define.h"
 #include "INTRINS.H"
+#include "PanelPoint.h"
 
 
 
@@ -48,27 +49,28 @@
 #define  OUT_PACKET_LEN		16
 #define  IN_PACKET_LEN		64
 
-u8	xdata OUT_PACKET[OUT_PACKET_LEN];	// = {0,0,0,0,0,0,0,0,0};
-u8  xdata IN_PACKET[IN_PACKET_LEN];	//  = {0,0,0};
-u8  xdata cur_cam_idx ;
-cam_send_img_stat_st cam_status[CAM_COUNT];
+u8	idata OUT_PACKET[OUT_PACKET_LEN];	
+u8  idata IN_PACKET[IN_PACKET_LEN];	
+u8  idata cur_cam_idx ;
 
-//u8 IN_PACKET[8];
+u8	idata BACKUP_PACKET[13];
+u8	idata g_backup_ptnum ;
 
-extern u8 code cmd_config_sensor[];
-extern u8 code cmd_config_sensor_cnt;
-extern u8	g_work_style;
-
-extern void Fifo_Write_Foreground (u8 addr, unsigned int uNumBytes, u8 * pData);
-
-
-// ----------------------------------------------------------------------------
-// Global Variable Declaration
-// ----------------------------------------------------------------------------
 
 BufferStructure IN_BUFFER, OUT_BUFFER;
+cam_send_img_stat_st cam_status[CAM_COUNT];
 
-extern u8 IN_PACKET[];
+
+extern u8	code cmd_config_sensor[];
+extern u8	code cmd_config_sensor_cnt;
+extern u8	idata g_work_style;
+
+//extern void Fifo_Write_Foreground (u8 addr, unsigned int uNumBytes, u8 * pData);
+extern void Fifo_Write_Foreground (u8 addr, u8 uNumBytes,u8 idata* pData);
+
+
+
+
 
 void send_debug_info_to_host(u8 rid)
 {
@@ -116,7 +118,7 @@ void send_debug_info_to_host(u8 rid)
 			IN_BUFFER.Length = REPORT_ID_IN_MTOUCH_LEN + 1;
 		}
 		// Put new data on Fifo
-		Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(u8 *)IN_BUFFER.Ptr);
+		Fifo_Write_Foreground (FIFO_EP1, IN_BUFFER.Length,(u8 idata*)IN_BUFFER.Ptr);
 
 		POLL_WRITE_BYTE (EINCSR1, rbInINPRDY);
 		// Set In Packet ready bit,
@@ -294,9 +296,29 @@ void ReportHandler_IN_ISR(u8 R_ID)
 }
 
 
+PanelPoint g_panel_point;
+
+void send_mtouch_info(void)
+{
+	g_panel_point.x +=5;
+	//g_panel_point.y +=100;
+	
+	g_panel_point.x %= 1600;
+	//g_panel_point.y %= 900;
+	
+	fill_hid_packet(&g_panel_point,1); 
+	send_debug_info_to_host(REPORT_ID_IN_MTOUCH);	
+	return;	
+}
 void report_handler_init(void)
 {
  	u8 idata i,read_cnt,remain;
+
+	for(i = 0;i<13;i++)
+	{		
+		BACKUP_PACKET[i] = 0;
+	}
+	g_backup_ptnum = 0;
 	
    	read_cnt = 	(IMAGE_WIDTH*IMAGE_HEIGHT)/BREAD_ONCE;
 	remain   =  (IMAGE_WIDTH*IMAGE_HEIGHT)%BREAD_ONCE;
@@ -315,6 +337,69 @@ void report_handler_init(void)
 	//event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_switch_style_cmd_return);
 	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,handle_report_out);
 
+	g_panel_point.ID = 0;
+ 	g_panel_point.x  = 0;
+	g_panel_point.y  = 500;
+
+	event_cb_regist(EVENT_ID_RETURN_MTOUCH,send_mtouch_info);
+
+}
+
+extern u8 idata g_ticks_second;
+char fill_hid_packet(PanelPoint *MyPoint,u8 PointNum)
+{
+	char idata i = 0;
+	char idata flag = 0;
+
+	IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
+
+	if (PointNum >= g_backup_ptnum)
+	{
+		IN_PACKET[13] = PointNum;
+		g_backup_ptnum = PointNum;
+	}
+	else
+	{
+		IN_PACKET[13] = g_backup_ptnum;
+		g_backup_ptnum = PointNum;
+	}
+	
+	for (i=PointNum;i<2;i++)
+	{
+		IN_PACKET[1+6*i] = 0x0;
+	}
+	
+	for (i=0;i<PointNum;i++)
+	{
+		//if(g_ticks_second % 5 ==0)
+		//	IN_PACKET[1+6*i] = 0x00;
+	//	else
+			IN_PACKET[1+6*i] = 0x03;
+		IN_PACKET[2+6*i] = MyPoint[i].ID+1;
+		IN_PACKET[3+6*i] = (unsigned char)(MyPoint[i].x);
+		IN_PACKET[4+6*i] = (unsigned char)(MyPoint[i].x>>8);
+		IN_PACKET[5+6*i] = (unsigned char)(MyPoint[i].y);
+		IN_PACKET[6+6*i] = (unsigned char)(MyPoint[i].y>>8);
+	}
+
+	for (i=0;i<13;i++)
+	{
+		if (BACKUP_PACKET[i]!=IN_PACKET[i+1])
+		{
+			flag = 1;
+			break;
+		}
+	}
+
+	if (flag)
+	{
+		for (i=0;i<13;i++)
+		{
+			BACKUP_PACKET[i] = IN_PACKET[i+1];
+		}
+	}
+
+	return flag;
 }
 
 

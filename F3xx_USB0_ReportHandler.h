@@ -32,6 +32,7 @@
 #define  _USB_REPORTHANDLER_H_
 
 #include "type.h"
+#include "panelpoint.h"
 
 #define REPORT_ID_IN_MTOUCH   	0x01
 #define REPORT_ID_IN_DBGINFO   	0x02
@@ -49,10 +50,17 @@
 #define  OUT_PACKET_LEN		16
 #define  IN_PACKET_LEN		64
 
+extern u8	idata OUT_PACKET[OUT_PACKET_LEN];	
+extern u8	idata IN_PACKET[IN_PACKET_LEN];	
+extern u8	idata cur_cam_idx ;
+
 #define	WORK_STYLE_IDLE			0x00
 #define WORK_STYLE_PREVIEW		0x01
 #define WORK_STYLE_CAL			0x02
 #define WORK_STYLE_NOMAL		0x03
+
+
+
 
 typedef struct {
    unsigned char ReportID;
@@ -60,8 +68,8 @@ typedef struct {
 } VectorTableEntry;
 
 typedef struct{
-   unsigned char Length;
-   unsigned char* Ptr;
+   unsigned char	Length;
+   unsigned char*	Ptr;
 } BufferStructure;
 
  typedef enum
@@ -101,6 +109,8 @@ extern BufferStructure IN_BUFFER, OUT_BUFFER;
 
 extern void report_handler_init(void);
 void send_debug_info_to_host(u8 rid);
+
+char fill_hid_packet(PanelPoint *MyPoint,u8 PointNum);
 //void send_debug_info_to_host_1(void);
 //void recv_cmd_from_host(u8 rid);
 
