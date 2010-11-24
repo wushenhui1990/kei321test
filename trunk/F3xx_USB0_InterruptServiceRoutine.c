@@ -73,8 +73,8 @@ void Usb_Suspend (void);               // This routine called when
 void Fifo_Read (unsigned char, unsigned int, unsigned char *);
                                        // Used for multiple byte reads
                                        // of Endpoint fifos
-void Fifo_Write_Foreground (unsigned char, unsigned int, unsigned char *);
-                                       // Used for multiple byte writes
+//void Fifo_Write_Foreground (unsigned char, unsigned int, unsigned char idata*);
+void Fifo_Write_Foreground (u8 addr, u8 uNumBytes,u8 idata* pData);                                       // Used for multiple byte writes
                                        // of Endpoint fifos in foreground
 void Fifo_Write_InterruptServiceRoutine (unsigned char, unsigned int,
 										 unsigned char *);
@@ -519,10 +519,10 @@ void Fifo_Read (unsigned char addr, unsigned int uNumBytes,
 
 //-----------------------------------------------------------------------------
 
-void Fifo_Write_Foreground (unsigned char addr, unsigned int uNumBytes,
-                    unsigned char * pData)
+void Fifo_Write_Foreground (u8 addr, u8 uNumBytes,u8 idata* pData)
+//void Fifo_Write_Foreground (u8 addr, u8 uNumBytes,u8 * pData)
 {
-   int i;
+   u8 idata i;
 
    // If >0 bytes requested,
    if (uNumBytes)

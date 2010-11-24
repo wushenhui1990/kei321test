@@ -14,12 +14,13 @@ typedef struct _timer_ev_unit
 	void (*callback)(void);// callback;
 }timer_ev_unit_st;
 
+/*
 typedef struct _timer_event_st
 {
  	timer_ev_unit_st ev_unit[MAX_TIMER_EVENT_QUEUE];
 	u8  tail;
 }timer_event_st;
-
+*/
 void timer_event_init(void);
 char timer_event_add(timer_ev_unit_st*ev_unit);
 char timer_event_del(u8 ev_id);

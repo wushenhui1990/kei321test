@@ -7,6 +7,7 @@
 //================================================
 #define EVENT_ID_TIMER_DEBUG 			0x00
 #define EVENT_ID_RETURN_HOST_CMD		0x01
+#define EVENT_ID_RETURN_MTOUCH			0x02
 
 
 #define EVENT_ID_INVALID			0xFF

@@ -1,7 +1,6 @@
 #include "c8051f320.h"
 #include "flash_rw.h"
 
-#if 0
 //
 // This routine writes <byte> to the linear FLASH address <addr>.
 //
@@ -64,6 +63,8 @@ void flash_pageerase (u16 addr)
 	PSCTL &= ~0x03; // PSWE = 0; PSEE = 0
 	EA = EA_SAVE; // restore interrupts
 }
+
+#if 0
 
 void flash_copy (u16 dest, u16 src, unsigned numbytes)
 {
@@ -151,7 +152,7 @@ void flash_clear (u16 dest, unsigned numbytes)
 		flash_copy (wptr, rptr, length);
 	}
 }
-
+#endif
 void flash_write (u16 dest, u8 *src, u16 cnt)
 {
 	u16 i;
@@ -177,7 +178,7 @@ void flash_read (u8 *dest, u16 src, u16 cnt)
 	}
 	return ;
 }
-
+#if 0
 void flash_update (u16 dest, u8 *src, u16 cnt)
 {
 	// 1. Erase <numbytes> starting from <dest>

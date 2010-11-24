@@ -120,7 +120,7 @@ unsigned char code HID_report_desc[] =
     0x95, 0x01,                         //       REPORT_COUNT (1)
     0x81, 0x02,                         //       INPUT (Data,Var,Abs)
     0x05, 0x01,                         //       USAGE_PAGE (Generic Desk..
-    0x26, 0xff, 0x7f,                   //       LOGICAL_MAXIMUM (32767)
+    0x26, 0x40, 0x06,                   //       LOGICAL_MAXIMUM (32767)
     0x75, 0x10,                         //       REPORT_SIZE (16)
     0x55, 0x00,                         //       UNIT_EXPONENT (0)
     0x65, 0x00,                         //       UNIT (None)
@@ -152,7 +152,7 @@ unsigned char code HID_report_desc[] =
     0x95, 0x01,                         //       REPORT_COUNT (1)
     0x81, 0x02,                         //       INPUT (Data,Var,Abs)
     0x05, 0x01,                         //       USAGE_PAGE (Generic Desk..
-    0x26, 0xff, 0x7f,                   //       LOGICAL_MAXIMUM (32767)
+    0x26, 0x40, 0x06,                   //       LOGICAL_MAXIMUM (32767)
     0x75, 0x10,                         //       REPORT_SIZE (16)
     0x55, 0x00,                         //       UNIT_EXPONENT (0)
     0x65, 0x00,                         //       UNIT (None)
