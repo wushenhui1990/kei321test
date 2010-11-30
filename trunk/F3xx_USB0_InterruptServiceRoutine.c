@@ -522,7 +522,7 @@ void Fifo_Read (unsigned char addr, unsigned int uNumBytes,
 void Fifo_Write_Foreground (u8 addr, u8 uNumBytes,u8 idata* pData)
 //void Fifo_Write_Foreground (u8 addr, u8 uNumBytes,u8 * pData)
 {
-   u8 idata i;
+   u8 data i;
 
    // If >0 bytes requested,
    if (uNumBytes)

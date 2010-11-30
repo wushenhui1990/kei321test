@@ -155,7 +155,7 @@ void flash_clear (u16 dest, unsigned numbytes)
 #endif
 void flash_write (u16 dest, u8 *src, u16 cnt)
 {
-	u16 i;
+	u16 data i;
 	for (i = dest; i < dest+cnt; i++)
 	{
 		flash_bytewrite (i, *src++);
@@ -171,7 +171,7 @@ void flash_write (u16 dest, u8 *src, u16 cnt)
 //
 void flash_read (u8 *dest, u16 src, u16 cnt)
 {
-	u16 i;
+	u16 data i;
 	for (i = 0; i < cnt; i++)
 	{
 		*dest++ = flash_byteread (src+i);

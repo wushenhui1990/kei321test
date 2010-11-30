@@ -4,10 +4,10 @@
 #include "uart.h"
 
 //----------------------------------------------------------
-u8				idata g_ev_event[MAX_EVENT_QUEUE];
-u8 				idata g_ev_head;
-u8 				idata g_ev_tail;
-u8 				idata g_ev_len;
+u8				data g_ev_event[MAX_EVENT_QUEUE];
+u8 				data g_ev_head;
+u8 				data g_ev_tail;
+u8 				data g_ev_len;
 
 void (*g_ev_handler[MAX_EVENT_QUEUE])(void);
 //----------------------------------------------------------	
@@ -17,7 +17,7 @@ void (*g_ev_handler[MAX_EVENT_QUEUE])(void);
 
 void event_init(void)
 {
-	u8	idata i;
+	u8	data i;
 	for(i=0;i<MAX_EVENT_QUEUE;i++)
 	{
 		g_ev_event[i]=EVENT_ID_INVALID;
@@ -59,7 +59,7 @@ extern unsigned char EP_STATUS[3];
 
 void event_process(void)  
 {
-	u8  idata ev_id;	
+	u8  data ev_id;	
 	bit eabak;
 	eabak = EA;
 

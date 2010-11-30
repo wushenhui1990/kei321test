@@ -259,7 +259,7 @@ u8 code cmd_config_sensor_cnt = (sizeof(cmd_config_sensor)>>1);
 
 u8 uart_send(u8 *buff,u16 len)
 {
-	u16 idata i;
+	u16 data i;
 	bit easave;
 	easave = EA;
 	EA = 0;
@@ -278,7 +278,7 @@ u8 uart_send(u8 *buff,u16 len)
 #if 1
 u8 uart_read(u8 *buff,u16 len)
 {
-	u16 idata i;
+	u16 data i;
 	u8	idata cnt;//
 	bit easave;
 	easave = EA;
@@ -327,8 +327,8 @@ void delay(void)
 }
 u8 uart_write_reg(u32 addr, u8 value)
 {
-	u8  idata buf[6];
-	u8  idata err;
+	u8  data buf[6];
+	u8  data err;
 
 	buf[0] = CMD_PBI | 0x01;
 	buf[1] = PBI_APB_WRITE;
@@ -346,8 +346,8 @@ u8 uart_write_reg(u32 addr, u8 value)
 
 u8 uart_read_reg(u32 addr, u8 *pvalue)
 {
-	u8  idata buf[5];
-	u8  idata err;
+	u8  data buf[5];
+	u8  data err;
 	buf[0] = CMD_PBI;
 	buf[1] = PBI_APB_READ;
 	buf[2] = (u8)addr;
@@ -378,7 +378,7 @@ void uart_burst_write(u32 addr,u8 *buf,u8 len)
  */
 void uart_burst_read(u32 addr,u8 *buf,u16 len)
 {
-	u8  idata bufh[5];
+	u8  data bufh[5];
 
 	uart_write_reg(UART_RLENL,len&0x00ff);
 	uart_write_reg(UART_RLENH,(len&0xff00)>>8);

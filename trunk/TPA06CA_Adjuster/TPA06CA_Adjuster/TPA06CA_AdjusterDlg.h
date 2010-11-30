@@ -15,7 +15,7 @@
 // ----------------------------------------------------------------------------
 // Report Sizes (in bytes)
 // ----------------------------------------------------------------------------
-#define REPORT_ID_OUT_CMD_LEN    0x08
+#define REPORT_ID_OUT_CMD_LEN    0x0f
 #define REPORT_ID_IN_IMAGE_LEN   0x3f
 #define REPORT_ID_IN_MTOUCH_LEN  0x02
 
