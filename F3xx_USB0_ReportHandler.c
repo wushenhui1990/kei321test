@@ -67,6 +67,7 @@ extern u8	idata g_work_style;
 
 //extern void Fifo_Write_Foreground (u8 addr, unsigned int uNumBytes, u8 * pData);
 extern void Fifo_Write_Foreground (u8 addr, u8 uNumBytes,u8 idata* pData);
+void cam_status_init(u16 width,u16 height);
 
 
 
@@ -130,8 +131,10 @@ void send_debug_info_to_host(u8 rid)
 
 void handle_report_out(void)
 {
-	u8 	idata idx,sen_addr,reg_val,ret,cmd;
+	u8 	idata reg_val,ret,cmd;
 	u16 idata reg_addr;
+	u16 idata w,h;
+	u8  idata line;
 
 
 	cmd = OUT_BUFFER.Ptr[1];
@@ -210,11 +213,17 @@ void handle_report_out(void)
 
 		if(	g_work_style == WORK_STYLE_PREVIEW)
 		{
-			for(idx = 0; idx <cmd_config_sensor_cnt; idx++)
+			IE&=~0x2;			//(timer0 interupt disable)
+			
+			if(OUT_BUFFER.Ptr[3])
 			{
-				sen_addr = 	cmd_config_sensor[idx<<1];
-				reg_val  =  cmd_config_sensor[(idx<<1)+1];
-				i2c_write_reg(sen_addr,reg_val);	
+				w = (OUT_BUFFER.Ptr[5]<<8)|(OUT_BUFFER.Ptr[4]);
+				h = (OUT_BUFFER.Ptr[7]<<8)|(OUT_BUFFER.Ptr[6]);
+				line = OUT_BUFFER.Ptr[8];
+
+				cam_status_init(w,h);
+	 			config_sensor();
+
 			}
 		}
 
@@ -310,18 +319,13 @@ void send_mtouch_info(void)
 	send_debug_info_to_host(REPORT_ID_IN_MTOUCH);	
 	return;	
 }
-void report_handler_init(void)
-{
- 	u8 idata i,read_cnt,remain;
 
-	for(i = 0;i<13;i++)
-	{		
-		BACKUP_PACKET[i] = 0;
-	}
-	g_backup_ptnum = 0;
+void cam_status_init(u16 width,u16 height)
+{
+ 	u8 data i,read_cnt,remain;
 	
-   	read_cnt = 	(IMAGE_WIDTH*IMAGE_HEIGHT)/BREAD_ONCE;
-	remain   =  (IMAGE_WIDTH*IMAGE_HEIGHT)%BREAD_ONCE;
+   	read_cnt = 	(width*height)/BREAD_ONCE;
+	remain   =  (width*height)%BREAD_ONCE;
 
 	if(remain)
 		read_cnt++;
@@ -334,9 +338,22 @@ void report_handler_init(void)
 		cam_status[i].remain = (remain? remain:BREAD_ONCE);
 	}
 
-	//event_cb_regist(EVENT_ID_RETURN_HOST_CMD,send_switch_style_cmd_return);
+	return;
+}
+void report_handler_init(void)
+{
+ 	u8 data i;
+
+	
+	cam_status_init(IMAGE_WIDTH,IMAGE_HEIGHT);
+	
 	event_cb_regist(EVENT_ID_RETURN_HOST_CMD,handle_report_out);
 
+	for(i = 0;i<13;i++)
+	{		
+		BACKUP_PACKET[i] = 0;
+	}
+	g_backup_ptnum = 0;
 	g_panel_point.ID = 0;
  	g_panel_point.x  = 0;
 	g_panel_point.y  = 500;
@@ -348,8 +365,8 @@ void report_handler_init(void)
 extern u8 idata g_ticks_second;
 char fill_hid_packet(PanelPoint *MyPoint,u8 PointNum)
 {
-	char idata i = 0;
-	char idata flag = 0;
+	char data i = 0;
+	char data flag = 0;
 
 	IN_PACKET[0] = REPORT_ID_IN_MTOUCH;
 
@@ -384,20 +401,21 @@ char fill_hid_packet(PanelPoint *MyPoint,u8 PointNum)
 
 	for (i=0;i<13;i++)
 	{
-		if (BACKUP_PACKET[i]!=IN_PACKET[i+1])
+		if (BACKUP_PACKET[i]^IN_PACKET[i+1])
 		{
+			BACKUP_PACKET[i] = IN_PACKET[i+1];
 			flag = 1;
-			break;
+			//break;
 		}
 	}
 
-	if (flag)
-	{
-		for (i=0;i<13;i++)
-		{
-			BACKUP_PACKET[i] = IN_PACKET[i+1];
-		}
-	}
+//	if (flag)
+//	{
+//		for (i=0;i<13;i++)
+//		{
+//			BACKUP_PACKET[i] = IN_PACKET[i+1];
+//		}
+//	}
 
 	return flag;
 }

@@ -42,7 +42,7 @@
 // ----------------------------------------------------------------------------
 // Report Sizes (in bytes)
 // ----------------------------------------------------------------------------
-#define REPORT_ID_OUT_CMD_LEN		0x08
+#define REPORT_ID_OUT_CMD_LEN		0x0f	//no including the report_id
 #define REPORT_ID_IN_DBGINFO_LEN  	0x3f
 #define REPORT_ID_IN_MTOUCH_LEN  	0x0d
 
@@ -102,7 +102,7 @@ typedef struct{
 
 extern void ReportHandler_IN_ISR(unsigned char);
 extern void ReportHandler_IN_Foreground(unsigned char);
-extern void ReportHandler_OUT(unsigned char);
+//extern void ReportHandler_OUT(unsigned char);
 extern void Setup_OUT_BUFFER(void);
 
 extern BufferStructure IN_BUFFER, OUT_BUFFER;

@@ -151,7 +151,7 @@ unsigned int main_work_thread(void *param)
 {
     MSG msg;
 	DWORD	status;
-	unsigned char buff[8] = {0};
+	unsigned char buff[16] = {0};
 	unsigned char reportbuffer[256] = {0};
 	char*pInfo = NULL;
 	int addr,val,retval;
@@ -388,6 +388,12 @@ unsigned int main_work_thread(void *param)
 					buff[0] = REPORT_ID_OUT_CMD;
 					buff[1] = DATA_CMD_SWITCH_WORK_STYLE;
 					buff[2] = pInfo[0];
+					buff[3] = pInfo[1];
+					buff[4] = pInfo[2];
+					buff[5] = pInfo[3];
+					buff[6] = pInfo[4];
+					buff[7] = pInfo[5];
+					buff[8] = pInfo[6];
 
 					//pthis->PrintInfo("switch work style cmd ");
 					//if(p_thread_recv_report)
@@ -715,7 +721,7 @@ UINT RunScriptThread(LPVOID pParam)
 	size_t sz=0;
 	wcstombs_s(&sz,line,256,dlg->m_ScriptPath,_TRUNCATE);
 
-	fScript = fopen(line,"r");
+	fopen_s(&fScript,line,"r");
 	if (NULL==fScript)
 	{
 		//dlg->m_StatusInfo = "Script Open Fail!";
@@ -726,18 +732,18 @@ UINT RunScriptThread(LPVOID pParam)
 
 	while(!feof(fScript))
 	{
-		fscanf(fScript,"%d",&header);
+		fscanf_s(fScript,"%d",&header,sizeof(header));
 		if(1!=header)
 		{
 			fgets(line,512,fScript);
 			continue;
 		}
 		
-		fscanf(fScript,"%s",command); //read the command
+		fscanf_s(fScript,"%s",command,sizeof(command)); //read the command
 		if (!strcmp(command,"rd"))
 		{
-			fscanf(fScript,"%x",&Addr);
-			fscanf(fScript,"%x",&RegComp);
+			fscanf_s(fScript,"%x",&Addr,sizeof(Addr));
+			fscanf_s(fScript,"%x",&RegComp,sizeof(RegComp));
 			wret = WaitForSingleObject(g_event_reg_rdwr.m_hObject,TIMEOUT_REG_READ_WRITE);
 			if(wret==WAIT_OBJECT_0)
 			{
@@ -759,8 +765,8 @@ UINT RunScriptThread(LPVOID pParam)
 		}
 		else if (!strcmp(command,"wd"))
 		{
-			fscanf(fScript,"%x",&Addr);
-			fscanf(fScript,"%x",&Reg);
+			fscanf_s(fScript,"%x",&Addr,sizeof(Addr));
+			fscanf_s(fScript,"%x",&Reg,sizeof(Reg));
 
 			wret = WaitForSingleObject(g_event_reg_rdwr.m_hObject,TIMEOUT_REG_READ_WRITE);
 			if(wret==WAIT_OBJECT_0)
@@ -784,7 +790,7 @@ UINT RunScriptThread(LPVOID pParam)
 		}
 		else if (!strcmp(command,"#"))
 		{
-			fscanf(fScript,"%d",&Delay);
+			fscanf_s(fScript,"%d",&Delay,sizeof(Delay));
 			Sleep(Delay/1000);
 
 			sprintf_s(line,"delay %d clk\n",Delay);
@@ -799,8 +805,8 @@ UINT RunScriptThread(LPVOID pParam)
 		}
 		else if (!strcmp(command,"i2cwd"))
 		{
-			fscanf(fScript,"%x",&Addr);
-			fscanf(fScript,"%x",&Reg);
+			fscanf_s(fScript,"%x",&Addr,sizeof(Addr));
+			fscanf_s(fScript,"%x",&Reg,sizeof(Reg));
 			wret = WaitForSingleObject(g_event_reg_rdwr.m_hObject,TIMEOUT_REG_READ_WRITE);
 			if(wret==WAIT_OBJECT_0)
 			{
@@ -829,8 +835,8 @@ UINT RunScriptThread(LPVOID pParam)
 		}
 		else if (!strcmp(command,"i2crd"))
 		{
-			fscanf(fScript,"%x",&Addr);
-			fscanf(fScript,"%x",&RegComp);
+			fscanf_s(fScript,"%x",&Addr,sizeof(Addr));
+			fscanf_s(fScript,"%x",&RegComp,sizeof(RegComp));
 			wret = WaitForSingleObject(g_event_reg_rdwr.m_hObject,TIMEOUT_REG_READ_WRITE);
 			if(wret==WAIT_OBJECT_0)
 			{
@@ -862,9 +868,9 @@ UINT RunScriptThread(LPVOID pParam)
 		}
 /*		else if (!strcmp(command,"i2cbwd"))
 		{
-			fscanf(fScript,"%x",&Addr);
-			fscanf(fScript,"%x",&Reg);
-			fscanf(fScript,"%x",&RegComp);
+			fscanf_s(fScript,"%x",&Addr,sizeof(Addr));
+			fscanf_s(fScript,"%x",&Reg,sizeof(Reg));
+			fscanf_s(fScript,"%x",&RegComp,sizeof(RegComp));
 			sprintf_s(line,"burst write sensor reg 0x%02x: 0x%02x 0x%02x\n",Addr,Reg,RegComp);
 			dlg->PrintInfo(line);
 			dlg->m_Debug.WriteRegister(0xC405,0x21);
@@ -952,7 +958,7 @@ BOOL CTPA06CA_AdjusterDlg::OnInitDialog()
 	GetDlgItem(IDC_STATIC_PREVIEW1)->MoveWindow(15,450,VIDEO_WIDTH,VIDEO_HEIGHT*SCALE_Y,1);
 
 	if(fdebug == NULL)
-	fdebug = fopen("f:\\test.hex","wb");
+		fopen_s(&fdebug,"f:\\test.hex","wb");
 	//-------------------------------------------------------------------------
 	//-----------------------------------------------------------------------------
 	int i;
@@ -1017,6 +1023,10 @@ BOOL CTPA06CA_AdjusterDlg::OnInitDialog()
 
 	UpdateData(FALSE);
 
+
+	ModifyStyle(WS_CAPTION,0,0); //如果不想去掉标题栏，去掉该句。
+	SendMessage(WM_SYSCOMMAND,SC_MAXIMIZE,0); 
+ 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -1578,14 +1588,36 @@ void CTPA06CA_AdjusterDlg::OnBnClickedButtonPreview()
 		
 		m_work_style.GetWindowText(strTemp);
 
-		if(strTemp==_T("idle"))				{	g_cmd_buff[0] = 0;					PrintInfo("switch to	idle ");		}
-		else if(strTemp==_T("preview"))		{	g_cmd_buff[0] = WORK_STYLE_PREVIEW; PrintInfo("switch to	preview ");		}
-		else if(strTemp==_T("calibration")) {	g_cmd_buff[0] = WORK_STYLE_CAL;		PrintInfo("switch to	calibration ");	}
-		else if(strTemp==_T("nomal"))		{	g_cmd_buff[0] = WORK_STYLE_NOMAL;	PrintInfo("switch to	nomal ");		}
-		else{	PrintInfo("select none\n"); g_event_reg_rdwr.SetEvent();	return;}
+		if(strTemp==_T("idle")){
+			g_cmd_buff[0] = 0;
+			PrintInfo("switch to	idle ");
+		}else if(strTemp==_T("preview"))
+		{
+			g_cmd_buff[0] = WORK_STYLE_PREVIEW;
+			g_cmd_buff[1] = 1;//changed w or h
+			g_cmd_buff[2] = (unsigned char)(VIDEO_WIDTH);
+			g_cmd_buff[3] = (unsigned char)(VIDEO_WIDTH>>8);
+			g_cmd_buff[4] = (unsigned char)(VIDEO_HEIGHT);
+			g_cmd_buff[5] = (unsigned char)(VIDEO_HEIGHT>>8);
+
+			PrintInfo("switch to	preview ");
+		}else if(strTemp==_T("calibration"))
+		{
+			g_cmd_buff[0] = WORK_STYLE_CAL;
+			PrintInfo("switch to	calibration ");
+		}else if(strTemp==_T("nomal"))
+		{
+			g_cmd_buff[0] = WORK_STYLE_NOMAL;
+			PrintInfo("switch to	nomal ");
+		}
+		else{
+			PrintInfo("select none\n");
+			g_event_reg_rdwr.SetEvent();
+			return;
+		}
 
 		//g_cmd_buff[0] = WORK_STYLE_PREVIEW;
-		//g_cmd_buff[0] = 0;
+		//g_cmd_buff[0] = 1;
 		//SuspendThread(HID_RX_THREAD);
 		ret1 = PostThreadMessage(p_thread_main_work->m_nThreadID,MSG_SWITCH_WORK_STYLE,(WPARAM)g_cmd_buff,0);//post thread msg
 		if(ret1 == FALSE)
@@ -1753,6 +1785,11 @@ void CTPA06CA_AdjusterDlg::OnDestroy()
 		hloc3 = NULL;
 	}
 
+	if(fdebug)
+	{
+		fclose(fdebug);
+		fdebug = NULL;
+	}
 
 
 	// TODO: 在此处添加消息处理程序代码
